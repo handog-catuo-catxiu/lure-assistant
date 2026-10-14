@@ -1,0 +1,28 @@
+.coming-soon {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.coming-soon__emoji {
+  font-size: 40px;
+  margin-bottom: 6px;
+}
+
+.coming-soon h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.coming-soon p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}

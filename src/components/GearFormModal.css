@@ -1,0 +1,282 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form__label {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.form__label em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.form__required {
+  color: var(--lure);
+}
+
+.form__input,
+.form__textarea {
+  width: 100%;
+  /*
+   * 16px 可避免 iOS 聚焦时自动放大页面。
+   * 注意必须写成三个长属性：`font: 16px/1.4 inherit` 里的 inherit 在 font 简写里
+   * 不是合法的字体族，整条声明会被浏览器丢掉（字号退回 UA 默认的 13.33px，
+   * 防放大就白写了）。
+   */
+  font-size: 16px;
+  line-height: 1.4;
+  font-family: inherit;
+  color: var(--text-strong);
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.form__textarea {
+  resize: vertical;
+  min-height: 76px;
+}
+
+/*
+ * 周边类型选择框：沿用 .form__input 的外观（同为 16px 字号，iOS 不会放大），
+ * 只把 select 自带的箭头和右侧留白补上；appearance 归零后自己画一个箭头。
+ */
+.form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 38px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) calc(50% + 1px),
+    calc(100% - 14px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  /* 箭头用文字色，避免深色主题下和背景糊在一起 */
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.form__input::placeholder,
+.form__textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.form__input:focus,
+.form__textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.form__grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form__sub-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.form__sub-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.form__switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.form__switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 14px;
+  color: var(--text-strong);
+}
+
+.form__switch-text em {
+  font-style: normal;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.form__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--lure);
+}
+
+.form__picked {
+  margin: 0;
+  padding: 8px 11px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--accent);
+}
+
+/* 照片区域 */
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.photo-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.photo-btn:hover {
+  border-color: var(--accent);
+}
+
+.photo-btn:focus-within,
+.photo-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 隐藏原生 file input，点 label 即可触发 */
+.photo-btn__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.photo-btn--danger {
+  color: var(--lure);
+}
+
+.photo-btn--danger:hover {
+  border-color: var(--lure);
+  background: color-mix(in srgb, var(--lure) 8%, transparent);
+}
+
+.photo-btn--disabled {
+  color: var(--text-muted);
+  background: var(--bg);
+  cursor: not-allowed;
+}
+
+.photo-btn--disabled:hover {
+  border-color: var(--border);
+}
+
+.photo-btn__soon {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+  font-size: 10.5px;
+  font-weight: 400;
+}
+
+.photo-hint {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* 分类分段选择：四个分类一行放下（每格约 84px，「周边装备」四个字在 12.5px 下约 50px） */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.segmented__item {
+  --tone: var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 11px 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.segmented__item[data-category='rod'] {
+  --tone: var(--rod);
+}
+.segmented__item[data-category='reel'] {
+  --tone: var(--reel);
+}
+.segmented__item[data-category='lure'] {
+  --tone: var(--lure);
+}
+.segmented__item[data-category='accessory'] {
+  --tone: var(--accessory);
+}
+
+.segmented__item--active {
+  border-color: var(--tone);
+  color: var(--tone);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+
+.segmented__item:focus-visible {
+  outline: 2px solid var(--tone);
+  outline-offset: 2px;
+}
+
+/* 开关样式见 ToggleSwitch.css（表单与详情页共用） */

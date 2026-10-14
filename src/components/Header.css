@@ -1,0 +1,81 @@
+.header {
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 22px;
+  background: linear-gradient(160deg, #0f7d8c 0%, #0d6472 55%, #0b5260 100%);
+  color: #fff;
+  border-radius: 0 0 22px 22px;
+}
+
+.header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header__logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.header__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.header__slogan {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.header__welcome {
+  margin: 18px 0 16px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header__stats {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.header__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header__stat strong {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.header__stat span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.header__divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.2);
+}

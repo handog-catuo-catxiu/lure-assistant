@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# 密钥与环境变量 —— 绝对不能提交。
+# 本阶段（需求：暂不接入 AI API）项目里没有任何密钥，这几条是防止以后
+# 接入 DeepSeek 等服务时手滑把 .env 传上去；确需提交的示例文件请命名为
+# .env.example 并只写占位值。
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 本地构建产物与临时文件
+.vite
+*.tsbuildinfo
+coverage
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

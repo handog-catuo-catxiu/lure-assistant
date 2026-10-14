@@ -1,0 +1,54 @@
+/*
+ * 外层容器（尺寸/圆角/背景/边框/对齐）统一定义在 mediaFrame.css 里，
+ * 这里只写「框里面放什么」。所以下面不要出现 width / height / border / background 的外层覆盖，
+ * 否则三种情况的容器就会不一致，列表会错位。
+ */
+.brand-tile {
+  --brand-hue: 214;
+  /* 品牌色只用在文字上：容器保持和其它两种情况一致的中性底色 */
+  color: hsl(var(--brand-hue) 52% 34%);
+  font-weight: 700;
+  user-select: none;
+}
+
+/* 文字占位：居中显示，字号对所有品牌统一 */
+.brand-tile__label {
+  padding: 0 6px;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/*
+ * 真实 Logo：图片自带一层圆角浅底。浅色主题下 --surface 本来就是白色，
+ * 看不出差别；深色主题下大部分品牌 Logo 是深色的，没有这层浅底会糊成一片。
+ * 这只是图片自身的底，外框仍然是统一的 --surface，不影响列表观感。
+ */
+.brand-tile__logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* contain + 居中：任何长宽比的 Logo 都按原始比例完整显示，不拉伸也不裁切 */
+  object-fit: contain;
+  object-position: center;
+  /* 内边距 8px：Logo 不贴边，同时留出统一的呼吸空间 */
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+/* 没有填写品牌：用中性灰代替品牌色，不假装是某个品牌 */
+.brand-tile--blank {
+  color: var(--text-muted);
+}
+
+@media (prefers-color-scheme: dark) {
+  .brand-tile {
+    color: hsl(var(--brand-hue) 72% 76%);
+  }
+
+  /* 浅色底在深色主题下需要一点边界，否则和卡片底色贴在一起 */
+  .brand-tile__logo {
+    background: #fff;
+  }
+}

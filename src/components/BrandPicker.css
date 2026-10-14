@@ -1,0 +1,90 @@
+/*
+ * 品牌选择框。输入框本身沿用表单的 .form__input，
+ * 这里只管候选列表，所以输入框的外观（含 16px 字号防 iOS 缩放）和表单其它字段完全一致。
+ */
+.brand-picker {
+  /* 候选行里的品牌标记比首页列表（64px）小一圈。
+     尺寸走的是 mediaFrame.css 里那套 --frame-size，自定义属性会继承到 .brand-tile 上，
+     所以这里不需要（也不应该）重写任何宽高、圆角或边框。 */
+  --frame-size: 36px;
+}
+
+/*
+ * 候选列表放在正常文档流里，不做绝对定位悬浮：
+ * 弹窗内容是 overflow:auto 的滚动容器，悬浮层容易被裁掉，
+ * 或者被推到可视区外还要用户再滚一下才点得到。撑开内容更稳。
+ */
+.brand-picker__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 4px;
+  /* 一次大约露出 5~6 条，再多就在列表内部滚，不把整个表单顶长 */
+  max-height: 264px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.brand-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  /* 44px 以上才是舒服的移动端点击目标 */
+  min-height: 46px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* 去掉 iOS 上点按的 300ms 延迟和灰色高亮块 */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brand-picker__item--active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.brand-picker__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.brand-picker__name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.brand-picker__latin {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 36px 的框沿用首页那套 20px 字号会顶格，缩小一档；作用域只在选择框内 */
+.brand-picker .brand-tile__label {
+  font-size: 14px;
+}
+
+.brand-picker .brand-tile__logo {
+  padding: 5px;
+}
+
+/* 手打的写法能对上品牌库时的提示 */
+.brand-picker__hint {
+  margin: 7px 2px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}

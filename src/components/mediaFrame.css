@@ -1,0 +1,23 @@
+/*
+ * 首页装备列表左侧的「媒体框」——品牌 Logo、品牌文字占位、装备照片三种情况
+ * 共用同一套外层容器：尺寸、圆角、背景、边框、对齐方式。
+ *
+ * 这一段是整个项目里唯一一处定义这些数值的地方。三者只要有一处不一样，
+ * 同一行列表里就会出现错位，所以不要在任何组件里重复定义，改这里即可。
+ *
+ * 尺寸由 --frame-size 控制：首页列表 64px（需求规定），
+ * 图鉴选择器的行更紧凑，在 .catalog-item 上覆盖成 48px；装备表单的品牌选择框用 36px。
+ */
+.brand-tile,
+.gear-image--thumb {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: var(--frame-size, 64px);
+  height: var(--frame-size, 64px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}

@@ -1,0 +1,60 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.search-bar__icon {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+.search-bar__input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 0;
+  border: none;
+  background: none;
+  color: var(--text-strong);
+  font-family: inherit;
+  /* 16px 可避免 iOS 聚焦时自动放大页面 */
+  font-size: 16px;
+  outline: none;
+}
+
+.search-bar__input::placeholder {
+  color: var(--text-muted);
+  font-size: 14.5px;
+}
+
+.search-bar__clear {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.search-bar__clear:hover {
+  color: var(--text-strong);
+}
+
+.search-bar__clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

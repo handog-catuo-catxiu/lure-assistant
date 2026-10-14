@@ -1,0 +1,30 @@
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirm__message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.confirm__highlight {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+  word-break: break-all;
+}
+
+.confirm__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}

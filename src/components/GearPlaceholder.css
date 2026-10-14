@@ -1,0 +1,40 @@
+.gear-placeholder {
+  --tone: var(--accent);
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.gear-placeholder[data-category='rod'] {
+  --tone: var(--rod);
+}
+.gear-placeholder[data-category='reel'] {
+  --tone: var(--reel);
+}
+.gear-placeholder[data-category='lure'] {
+  --tone: var(--lure);
+}
+.gear-placeholder[data-category='accessory'] {
+  --tone: var(--accessory);
+}
+
+/* 用 CSS 类而不是写在属性里的 var()，兼容性更稳 */
+.gear-placeholder__stop-a {
+  stop-color: color-mix(in srgb, var(--tone) 20%, var(--surface));
+}
+
+.gear-placeholder__stop-b {
+  stop-color: color-mix(in srgb, var(--tone) 5%, var(--surface));
+}
+
+.gear-placeholder__waves {
+  fill: none;
+  stroke: var(--tone);
+  stroke-opacity: 0.2;
+  stroke-width: 2;
+}
+
+.gear-placeholder__icon {
+  color: var(--tone);
+  opacity: 0.5;
+}

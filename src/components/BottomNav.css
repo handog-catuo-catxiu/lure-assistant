@@ -1,0 +1,85 @@
+.bottom-nav {
+  /*
+   * 固定在视口底部，不参与页面内容滚动。
+   * z-index 必须低于弹窗（Modal.css 里是 50），否则会盖住弹窗。
+   */
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 10;
+  width: 100%;
+  /* 手机上就是整屏宽；宽屏下和 .app-shell 一样居中并限制宽度 */
+  max-width: 480px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* 底部内边距带上 iPhone 安全区，Home 指示条不会压住导航项 */
+  padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  /*
+   * 用 translate3d 而不是 translate：强制生成合成层，滑出屏幕后图层不会被回收，
+   * 回来时首帧就有过渡（否则 iOS 上会看到没有动画的「闪现」）。
+   */
+  transform: translate3d(-50%, 0, 0);
+  /* 显示动画：稍慢、ease-out，滑入自然 */
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* 提前提升为合成层，滑动过程中不触发重绘 */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/*
+ * 向下滚动时整条滑出屏幕。多移 1px 是为了把上边框也带出去，
+ * 否则屏幕上会残留一条 1px 的线。
+ *
+ * 过渡写在两个状态里而不是只写一处：CSS 过渡取的是「变化后」那份样式的值，
+ * 所以收起时用这里更快的 200ms ease-in，展开时用上面 240ms 的 ease-out。
+ */
+.bottom-nav--hidden {
+  transform: translate3d(-50%, calc(100% + 1px), 0);
+  transition: transform 200ms cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* 键盘 Tab 进导航时强制滑回来，否则焦点会落在屏幕外 */
+.bottom-nav--hidden:focus-within {
+  transform: translate3d(-50%, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 两个状态都要覆盖，否则收起时仍会走 .bottom-nav--hidden 里的过渡 */
+  .bottom-nav,
+  .bottom-nav--hidden {
+    transition: none;
+  }
+}
+
+.bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.bottom-nav__item:hover {
+  color: var(--accent);
+}
+
+.bottom-nav__item--active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.bottom-nav__item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}

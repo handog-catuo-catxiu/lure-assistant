@@ -1,0 +1,78 @@
+# 推送到主分支后自动构建并发布到 GitHub Pages。
+#
+# 前置条件（在仓库网页上设置一次）：
+#   Settings → Pages → Build and deployment → Source 选择「GitHub Actions」。
+#   如果保持默认的「Deploy from a branch」，这个工作流会跑但不会真正上线。
+#
+# 部署后的地址：https://<用户名>.github.io/lure-assistant/
+# 资源前缀由 vite.config.ts 里的 base 提供，本地开发和线上互不影响。
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # 允许在 Actions 页面手动点一次重新部署，排查问题时不用空提交
+  workflow_dispatch:
+
+# 只给发布 Pages 必需的权限，其余保持只读
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署；新推送打断排队中的旧任务，但不打断正在进行的发布
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # 放在构建之前：仓库还没开启 Pages 时会在这里就报错，
+      # 不用等整套构建跑完才发现发布不了
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      # 用 ci 而不是 install：严格按 package-lock.json 装，构建结果可复现。
+      # lockfile 里已经包含 linux 平台的二进制包（rolldown / lightningcss），
+      # 所以在 ubuntu 上装得出来。
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 代码检查
+        run: npm run lint
+
+      # 品牌 Logo 登记表要和 public/brand-logos/ 里的文件对得上：
+      # 登记了却不存在的文件会让界面先发一次无效请求再回退，这里提前拦住
+      - name: 校验品牌 Logo 登记表
+        run: npm run check:logos
+
+      - name: 构建
+        run: npm run build
+
+      - name: 上传构建产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 发布到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

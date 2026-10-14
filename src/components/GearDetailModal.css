@@ -1,0 +1,166 @@
+.detail {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail__hero {
+  --tone: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+
+.detail__hero[data-category='rod'] {
+  --tone: var(--rod);
+}
+.detail__hero[data-category='reel'] {
+  --tone: var(--reel);
+}
+.detail__hero[data-category='lure'] {
+  --tone: var(--lure);
+}
+.detail__hero[data-category='accessory'] {
+  --tone: var(--accessory);
+}
+
+.detail__hero-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+}
+
+.detail__hero-text {
+  min-width: 0;
+}
+
+.detail__hero-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--tone);
+}
+
+.detail__hero-name {
+  margin: 3px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+.detail__hero-spec {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+/* 图片区下方的「在首页显示装备图片」开关 */
+.detail__image-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.detail__image-switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13.5px;
+  color: var(--text-strong);
+}
+
+.detail__image-switch-text em {
+  font-style: normal;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.detail__rows {
+  margin: 14px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 2px;
+  border-top: 1px solid var(--border);
+}
+
+.detail-row:first-child {
+  border-top: none;
+}
+
+.detail-row__label {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.detail-row__value {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-strong);
+  text-align: right;
+  word-break: break-word;
+}
+
+.detail-row--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.detail-row--stacked .detail-row__value {
+  text-align: left;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.detail__fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.detail__fav--on {
+  border-color: color-mix(in srgb, var(--reel) 45%, transparent);
+  background: color-mix(in srgb, var(--reel) 12%, transparent);
+  color: var(--reel);
+  font-weight: 600;
+}
+
+.detail__fav:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
