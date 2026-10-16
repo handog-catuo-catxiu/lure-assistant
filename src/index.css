@@ -11,6 +11,8 @@
   --reel: #d4881f;
   --lure: #d94f6b;
   --accessory: #4f8a3d;
+  /* 暖色：出勤按钮、推荐程度这类「行动 / 提醒」用它，和主色 teal 区分开 */
+  --warm: #d9600a;
 
   --shadow: 0 12px 28px -18px rgba(15, 28, 38, 0.45);
 
@@ -42,6 +44,7 @@
     --reel: #e5a94a;
     --lure: #ec7189;
     --accessory: #84c46a;
+    --warm: #fb923c;
 
     --shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.8);
 

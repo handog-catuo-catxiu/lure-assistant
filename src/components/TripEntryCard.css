@@ -1,0 +1,156 @@
+.trip-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+}
+
+.trip-entry__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trip-entry__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.trip-entry__desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* 主操作：和「添加装备」按钮同一套渐变，保证页面上的主要动作长得一样 */
+.trip-entry__start,
+.trip-entry__resume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #12909f, #0c6a78);
+  color: #fff;
+  font: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -8px rgba(12, 106, 120, 0.9);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.trip-entry__start:hover,
+.trip-entry__resume:hover {
+  filter: brightness(1.06);
+}
+
+.trip-entry__start:active,
+.trip-entry__resume:active {
+  transform: scale(0.99);
+}
+
+.trip-entry__start:focus-visible,
+.trip-entry__resume:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* 进行中：整块用渐变底色，一眼能看出「有一场出勤还没结束」 */
+.trip-entry--active {
+  border-color: transparent;
+  background: linear-gradient(150deg, #0f7d8c 0%, #0d6472 60%, #0b5260 100%);
+  color: #fff;
+}
+
+.trip-entry__live {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trip-entry__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.trip-entry__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7df0b0;
+  box-shadow: 0 0 0 0 rgba(125, 240, 176, 0.7);
+  animation: trip-entry-pulse 2s ease-out infinite;
+}
+
+@keyframes trip-entry-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 240, 176, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(125, 240, 176, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(125, 240, 176, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trip-entry__dot {
+    animation: none;
+  }
+}
+
+.trip-entry__spot {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  word-break: break-word;
+}
+
+.trip-entry__meta {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.trip-entry__timer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.trip-entry__timer strong {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.trip-entry__resume {
+  background: rgba(255, 255, 255, 0.94);
+  color: #0c6a78;
+  box-shadow: none;
+}

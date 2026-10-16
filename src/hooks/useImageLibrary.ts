@@ -107,3 +107,6 @@ export function useImageLibrary() {
 
   return { images, loadError, saveImage, removeImage }
 }
+
+/** 装备照片接口，供需要向下传递的页面使用 */
+export type ImageLibraryApi = ReturnType<typeof useImageLibrary>

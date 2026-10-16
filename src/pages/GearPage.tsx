@@ -7,12 +7,14 @@ import GearListItem from '../components/GearListItem'
 import Header from '../components/Header'
 import SearchBar from '../components/SearchBar'
 import Toast from '../components/Toast'
+import TripEntryCard from '../components/TripEntryCard'
 import { BoxIcon, PlusIcon, SearchIcon } from '../components/icons'
-import { useGear } from '../hooks/useGear'
-import { useImageLibrary } from '../hooks/useImageLibrary'
 import { useToast } from '../hooks/useToast'
 import { gearMatchesQuery } from '../lib/gearSearch'
 import { toImageErrorMessage } from '../lib/imageStore'
+import type { GearApi } from '../hooks/useGear'
+import type { ImageLibraryApi } from '../hooks/useImageLibrary'
+import type { TripApi } from '../hooks/useTrip'
 import {
   CATEGORY_META,
   CATEGORY_ORDER,
@@ -32,7 +34,22 @@ const FILTERS: { key: Filter; label: string }[] = [
   })),
 ]
 
-export default function GearPage() {
+interface GearPageProps {
+  /** 装备与照片数据由 App 统一持有，和出勤流程共用同一份 */
+  gear: GearApi
+  images: ImageLibraryApi
+  trip: TripApi
+  onStartTrip: () => void
+  onResumeTrip: () => void
+}
+
+export default function GearPage({
+  gear,
+  images,
+  trip,
+  onStartTrip,
+  onResumeTrip,
+}: GearPageProps) {
   const {
     items,
     addGear,
@@ -40,8 +57,8 @@ export default function GearPage() {
     removeGear,
     toggleFavorite,
     setShowImageOnHome,
-  } = useGear()
-  const { images, saveImage, removeImage } = useImageLibrary()
+  } = gear
+  const { images: imageMap, saveImage, removeImage } = images
   const { message, showToast } = useToast()
 
   const [filter, setFilter] = useState<Filter>('all')
@@ -162,6 +179,18 @@ export default function GearPage() {
     <div className="gear-page">
       <Header total={items.length} favoriteCount={favoriteCount} />
 
+      {/* 出勤入口放在首页最上面：出门前第一眼就看到「开始出勤」 */}
+      <section className="gear-page__section">
+        <TripEntryCard
+          session={trip.activeSession}
+          catchCount={
+            trip.activeSession ? trip.catchCountOf(trip.activeSession.id) : 0
+          }
+          onStart={onStartTrip}
+          onResume={onResumeTrip}
+        />
+      </section>
+
       <section className="gear-page__section">
         <h2 className="gear-page__heading">装备分类</h2>
         <div className="gear-page__categories">
@@ -218,7 +247,7 @@ export default function GearPage() {
               <GearListItem
                 key={item.id}
                 item={item}
-                userImageUrl={images[item.id]?.url ?? null}
+                userImageUrl={imageMap[item.id]?.url ?? null}
                 onOpen={(target) => setDetailId(target.id)}
                 onEdit={handleOpenEdit}
                 onDelete={setPendingDelete}
@@ -269,7 +298,7 @@ export default function GearPage() {
       {detailItem && !formOpen && !pendingDelete && (
         <GearDetailModal
           item={detailItem}
-          userImageUrl={images[detailItem.id]?.url ?? null}
+          userImageUrl={imageMap[detailItem.id]?.url ?? null}
           onClose={() => setDetailId(null)}
           onEdit={handleOpenEdit}
           onDelete={setPendingDelete}
@@ -282,7 +311,7 @@ export default function GearPage() {
         <GearFormModal
           initial={editing}
           defaultCategory={filter === 'all' ? 'rod' : filter}
-          currentImageUrl={editing ? images[editing.id]?.url ?? null : null}
+          currentImageUrl={editing ? imageMap[editing.id]?.url ?? null : null}
           onCancel={handleCancelForm}
           onSubmit={handleSubmit}
         />

@@ -62,3 +62,6 @@ export function useGear() {
     setShowImageOnHome,
   }
 }
+
+/** 装备数据的接口，供需要向下传递的页面使用 */
+export type GearApi = ReturnType<typeof useGear>

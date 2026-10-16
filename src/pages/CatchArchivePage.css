@@ -1,0 +1,292 @@
+/* 我的渔获：统计条 + 搜索筛选 + 双列照片网格 */
+
+.catch-archive {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* ------------------------------ 统计 ------------------------------ */
+
+.catch-archive__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 14px 0;
+}
+
+.catch-archive__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.catch-archive__stat-icon {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.catch-archive__stat strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  /* 「12.5 cm」在窄屏上不要换行 */
+  white-space: nowrap;
+}
+
+.catch-archive__stat-label {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 340px) {
+  .catch-archive__stat strong {
+    font-size: 13.5px;
+  }
+
+  .catch-archive__stat-label {
+    font-size: 10px;
+  }
+}
+
+/* ------------------------------ 搜索与筛选 ------------------------------ */
+
+.catch-archive__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 14px 0;
+}
+
+.catch-archive__search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 10px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+.catch-archive__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  outline: none;
+}
+
+.catch-archive__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.catch-archive__clear {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.catch-archive__filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.catch-archive__filter--open,
+.catch-archive__filter--on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.catch-archive__filter--on {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-weight: 600;
+}
+
+.catch-archive__filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 14px 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.filter-group__title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.catch-archive__reset {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.catch-archive__count {
+  margin: 12px 14px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 横向滚动的胶囊行：排序和各个筛选维度共用 */
+.chip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 14px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.catch-archive__filters .chip-row {
+  margin: 0;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-row__label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip--on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.chip__count {
+  font-size: 10.5px;
+  opacity: 0.75;
+}
+
+/* ------------------------------ 网格 ------------------------------ */
+
+.catch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+  margin: 14px 14px 0;
+  padding: 0 0 12px;
+  list-style: none;
+}
+
+/* ------------------------------ 空状态 ------------------------------ */
+
+.catch-archive__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 56px 28px 24px;
+  text-align: center;
+}
+
+.catch-archive__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 6px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+.catch-archive__empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.catch-archive__empty-hint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.catch-archive__empty-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}

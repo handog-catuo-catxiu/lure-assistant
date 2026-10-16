@@ -1,0 +1,395 @@
+.species {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 24px;
+}
+
+/* ------------------------------ 基础信息 ------------------------------ */
+
+.species-hero {
+  display: flex;
+  gap: 12px;
+  margin: 14px 14px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.species-photo {
+  flex: 0 0 auto;
+  width: 108px;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+}
+
+.species-photo__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.species-photo__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.species-hero__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.species-hero__name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.species-hero__sci {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.species-hero__alias {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.species-hero__diff {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.species-diff {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.species-diff--medium {
+  background: color-mix(in srgb, var(--warm) 16%, transparent);
+  color: var(--warm);
+}
+
+.species-diff--hard {
+  background: color-mix(in srgb, var(--lure) 16%, transparent);
+  color: var(--lure);
+}
+
+.species-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+  color: var(--text);
+  font-size: 11.5px;
+}
+
+.species-credit {
+  margin: 8px 14px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ------------------------------ 内容分段 ------------------------------ */
+
+.species-card {
+  margin: 12px 14px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.species-card__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.species-card__title svg {
+  color: var(--accent);
+}
+
+.species-card__body {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.species-card__body p {
+  margin: 0 0 8px;
+}
+
+.species-card__body p:last-child {
+  margin-bottom: 0;
+}
+
+.species-note {
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+  color: var(--text-muted) !important;
+}
+
+.species-warn {
+  margin-top: 10px !important;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--warm) 12%, transparent);
+  color: var(--text) !important;
+  font-size: 12.5px !important;
+  line-height: 1.6 !important;
+}
+
+/* ------------------------------ 体型 ------------------------------ */
+
+.species-size {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.species-size__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--border) 40%, transparent);
+  font-size: 13px;
+}
+
+.species-size__item svg {
+  color: var(--accent);
+}
+
+.species-size__label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.species-size__value {
+  font-weight: 600;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------ 标签 ------------------------------ */
+
+.species-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+}
+
+.species-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text);
+}
+
+.species-chip--accent {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+/* ------------------------------ 四季 ------------------------------ */
+
+.species-seasons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.species-season {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.species-season--now {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.species-season__label {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 42px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.species-season__now {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.species-season__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ------------------------------ 玩法 ------------------------------ */
+
+.species-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.species-row {
+  display: flex;
+  gap: 10px;
+}
+
+.species-row__label {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 62px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.species-row__label svg {
+  color: var(--accent);
+}
+
+.species-row__text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ------------------------------ 注意事项 / 来源 ------------------------------ */
+
+.species-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.species-bullets li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.species-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--warm);
+}
+
+.species-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  list-style: none;
+}
+
+.species-sources li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.species-sources__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.species-sources__detail {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.species-foot {
+  margin: 16px 14px 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ------------------------------ 条目缺失 ------------------------------ */
+
+.species-missing {
+  margin: 32px 14px 0;
+  padding: 20px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.species-missing__title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.species-missing__hint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}

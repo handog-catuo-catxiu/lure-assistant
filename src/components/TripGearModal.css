@@ -1,0 +1,10 @@
+.trip-gear__hint {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.trip-gear__error {
+  margin-top: 14px;
+}

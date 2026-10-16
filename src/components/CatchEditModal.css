@@ -1,0 +1,131 @@
+.catch-edit__time {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  font-size: 13px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.catch-edit__spot {
+  color: var(--text-muted);
+}
+
+/* 上鱼位置：只读展示 + 补位置 / 清除位置 */
+.catch-edit__geo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.catch-edit__geo-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.catch-edit__geo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* 三个分类的渔获装备选择 */
+.catch-gear {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.catch-gear + .catch-gear {
+  margin-top: 4px;
+}
+
+.catch-gear__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.catch-gear__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.catch-gear__source {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.catch-gear__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.gear-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.gear-chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.gear-chip--active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.gear-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gear-chip__tag {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.catch-gear__empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.catch-gear__more {
+  align-self: flex-start;
+  padding: 4px 0;
+  color: var(--accent);
+  font-size: 12.5px;
+}
+
+.catch-gear__more:hover {
+  background: none;
+  text-decoration: underline;
+}

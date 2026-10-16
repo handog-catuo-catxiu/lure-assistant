@@ -1,0 +1,206 @@
+.catch-detail {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+}
+
+.catch-detail__notice {
+  margin: 0;
+  padding: 40px 20px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.catch-detail__photo {
+  margin: 14px 14px 0;
+}
+
+.catch-detail__section {
+  margin: 14px 14px 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.catch-detail__heading {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.catch-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.catch-detail__cell {
+  padding: 9px 11px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+.catch-detail__cell dt {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.catch-detail__cell dd {
+  margin: 3px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.catch-detail__label {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.catch-detail__note {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.catch-detail__value {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-strong);
+}
+
+.catch-detail__muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.catch-detail__hint {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.catch-detail__map-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.catch-detail__gear {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.catch-detail__gear li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.catch-detail__gear-cat {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+}
+
+.catch-detail__gear-name {
+  min-width: 0;
+  font-size: 13.5px;
+  color: var(--text-strong);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 装备被删掉了也要照实显示，只是标成灰的，不能当它不存在 */
+.catch-detail__gear-name--deleted {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.catch-detail__gear-brand {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.catch-detail__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: none;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.catch-detail__actions {
+  display: flex;
+  gap: 10px;
+  margin: 18px 14px 0;
+}
+
+.catch-detail__edit {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.catch-detail__delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--lure) 55%, var(--border));
+  border-radius: 14px;
+  background: none;
+  color: var(--lure);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}

@@ -25,8 +25,12 @@
    * 一旦跟着收起，文档就会变矮、滚动上限跟着变小，浏览器会把 scrollY
    * 往回钳，那会被当成「用户往上滚了」而把 Dock 又拉回来，形成来回闪动。
    * 恒定留白只在文档最末尾，而滚动到那时 Dock 一定会显示并盖住它，不会露出空栏。
+   *
+   * 额外加的 24px 是给中间那个凸出 Dock 上沿的「出勤」按钮留的：
+   * 它比 Dock 的边框盒还高 26px，滚到最底下时不加这一段，
+   * 最后一行内容会被那半个六边形压住。
    */
-  padding-bottom: var(--dock-space, 0px);
+  padding-bottom: calc(var(--dock-space, 0px) + 24px);
 }
 
 @media (min-width: 640px) {

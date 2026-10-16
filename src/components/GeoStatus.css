@@ -1,0 +1,215 @@
+/* GPS 状态卡片：开始出勤页与正在出勤页共用同一套样式 */
+
+.geo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.geo-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.geo-card__title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.geo-card__subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.geo-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.geo-badge--ok {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.geo-badge--wait {
+  background: color-mix(in srgb, var(--rod) 14%, transparent);
+  color: var(--rod);
+}
+
+.geo-badge--off {
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+  color: var(--text-muted);
+}
+
+.geo-badge--error {
+  background: color-mix(in srgb, var(--lure) 14%, transparent);
+  color: var(--lure);
+}
+
+.geo-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+}
+
+.geo-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.geo-row__label {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.geo-row__value {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.geo-row__value--muted {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.geo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.geo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.geo-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.geo-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.geo-btn--primary {
+  border-color: transparent;
+  background: linear-gradient(160deg, #12909f, #0c6a78);
+  color: #fff;
+}
+
+.geo-btn--primary:hover:not(:disabled) {
+  border-color: transparent;
+  color: #fff;
+  filter: brightness(1.06);
+}
+
+.geo-btn--danger {
+  border-color: color-mix(in srgb, var(--lure) 40%, var(--border));
+  color: var(--lure);
+}
+
+.geo-btn--danger:hover:not(:disabled) {
+  border-color: var(--lure);
+  color: var(--lure);
+}
+
+.geo-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.geo-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.geo-note--error {
+  color: var(--lure);
+}
+
+.geo-note--warn {
+  color: var(--reel);
+}
+
+.geo-card__hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* 地名：完整地址 + 数据来源署名 */
+.geo-note--place {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.geo-note__extra {
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.geo-note__link {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--text-muted) 45%, transparent);
+  text-underline-offset: 2px;
+}
+
+.geo-note__link:hover {
+  color: var(--accent);
+}
+
+.geo-note__retry {
+  flex: 0 0 auto;
+}

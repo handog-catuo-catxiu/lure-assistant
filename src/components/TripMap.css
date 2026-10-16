@@ -1,0 +1,253 @@
+/* 出勤地图（高德地图 JS API 2.0）：底图 + 轨迹 + 四类标记 */
+
+.trip-map {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  /* 底图没加载出来时露出的底色：不是纯白，仍能看清轨迹 */
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+  /* 双指缩放地图时不要触发页面的缩放/滚动 */
+  touch-action: pan-x pan-y;
+}
+
+.trip-map__canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* 高德默认字体太大，跟着应用的排版走（但绝不能藏它的 logo 与版权信息） */
+.trip-map__canvas .amap-container {
+  font: inherit;
+  background: transparent;
+}
+
+/*
+ * 高德的 logo 与版权信息（.amap-logo / .amap-copyright）由底图自带，
+ * 处在容器右下角，属于必须保留的署名 —— 这里刻意不给它们写任何
+ * 隐藏、缩小、变透明的样式。
+ */
+
+/* ------------------------------- 标记 ------------------------------- */
+
+.trip-map__current,
+.trip-map__head,
+.trip-map__picked {
+  display: block;
+  box-sizing: border-box;
+  border-radius: 50%;
+}
+
+/* 当前位置：蓝色圆点 + 白圈 */
+.trip-map__current {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #ffffff;
+  background: #1a73e8;
+  box-shadow: 0 0 0 1px rgba(26, 115, 232, 0.5), 0 2px 6px rgba(15, 28, 38, 0.35);
+}
+
+/* 回放时的移动标记：青色，带呼吸效果 */
+.trip-map__head {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #ffffff;
+  background: #0f7d8c;
+  box-shadow: 0 0 0 1px rgba(15, 125, 140, 0.5), 0 2px 6px rgba(15, 28, 38, 0.35);
+  animation: trip-map-pulse 1.4s ease-out infinite;
+}
+
+@keyframes trip-map-pulse {
+  0% {
+    box-shadow: 0 0 0 1px rgba(15, 125, 140, 0.5), 0 0 0 0 rgba(15, 125, 140, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 1px rgba(15, 125, 140, 0.5), 0 0 0 12px rgba(15, 125, 140, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 1px rgba(15, 125, 140, 0.5), 0 0 0 0 rgba(15, 125, 140, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trip-map__head {
+    animation: none;
+  }
+}
+
+/* 在地图上选中的位置：空心环，圆心即所选坐标 */
+.trip-map__picked {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #ffffff;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 2px var(--accent), 0 2px 6px rgba(15, 28, 38, 0.35);
+}
+
+/* 渔获：白底鱼形标记，点得到 */
+.trip-map__catch {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #d94f6b;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 28, 38, 0.35);
+  transition: transform 0.16s ease;
+}
+
+.trip-map__catch svg {
+  width: 16px;
+  height: 16px;
+}
+
+.trip-map__catch:hover {
+  transform: scale(1.12);
+}
+
+/* ------------------------------ 弹窗 ------------------------------ */
+
+.trip-map .amap-info-content {
+  padding: 0;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.trip-map .amap-info-sharp {
+  border-top-color: var(--surface);
+}
+
+.trip-map .amap-info-close {
+  top: 6px;
+  right: 8px;
+  color: var(--text-muted);
+}
+
+.trip-map__popup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.trip-map__popup strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.trip-map__popup em {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------- 悬浮信息 --------------------------- */
+
+.trip-map__empty,
+.trip-map__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px;
+  text-align: center;
+  /* 空状态只是提示，不挡住地图的拖动 */
+  pointer-events: none;
+}
+
+.trip-map__veil {
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  pointer-events: auto;
+}
+
+.trip-map__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.trip-map__empty p,
+.trip-map__veil p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.trip-map__veil-hint {
+  font-size: 11.5px;
+}
+
+.trip-map__retry {
+  margin-top: 4px;
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.trip-map__retry:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.trip-map__fit {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 500;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.trip-map__fit:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+/* IP 大致位置：直接压在地图下沿，一眼能看到，不用去旁边卡片找 */
+.trip-map__ip-note {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 500;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn, #c98a2e) 45%, var(--border));
+  color: var(--text);
+  font-size: 11.5px;
+  line-height: 1.45;
+}

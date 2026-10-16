@@ -1,0 +1,82 @@
+.catch-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* button 不会自动撑满栅格单元，不写这一句卡片会缩成内容宽度 */
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.catch-card:active .catch-photo {
+  transform: scale(0.985);
+}
+
+.catch-card .catch-photo {
+  transition: transform 0.16s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catch-card:active .catch-photo {
+    transform: none;
+  }
+}
+
+.catch-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+
+.catch-card__body {
+  min-width: 0;
+}
+
+.catch-card__name {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.catch-card__date {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.catch-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 5px 0 0;
+}
+
+.catch-card__tags span {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.catch-card__spot {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

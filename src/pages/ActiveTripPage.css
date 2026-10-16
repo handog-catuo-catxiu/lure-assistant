@@ -1,0 +1,349 @@
+.active-trip {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 24px;
+}
+
+.active-trip__section {
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.active-trip__notice {
+  padding: 24px 16px;
+}
+
+.active-trip__notice-text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* 状态大卡片 */
+.active-trip__hero {
+  margin: 16px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 16px;
+  border-radius: 20px;
+  background: linear-gradient(150deg, #0f7d8c 0%, #0d6472 60%, #0b5260 100%);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+.active-trip__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.active-trip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #7df0b0;
+  animation: active-trip-pulse 2s ease-out infinite;
+}
+
+@keyframes active-trip-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(125, 240, 176, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(125, 240, 176, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(125, 240, 176, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active-trip__dot {
+    animation: none;
+  }
+}
+
+.active-trip__spot {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  word-break: break-word;
+}
+
+.active-trip__started {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.active-trip__timer {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.active-trip__timer strong {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 1.5px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.active-trip__timer-units {
+  display: flex;
+  gap: 18px;
+  padding-bottom: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.active-trip__stats {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.active-trip__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.active-trip__stat strong {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.active-trip__stat span {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.active-trip__stat-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 步数与抛投次数占位 */
+.active-trip__future {
+  display: flex;
+  gap: 8px;
+}
+
+.active-trip__future-item {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.active-trip__future-label {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.active-trip__future-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  font-variant-numeric: tabular-nums;
+}
+
+.active-trip__future-tag {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 一键上鱼：整个页面最醒目的操作 */
+.catch-button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 20px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(150deg, #12909f, #0c6a78);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -12px rgba(12, 106, 120, 0.95);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.catch-button:hover {
+  filter: brightness(1.06);
+}
+
+.catch-button:active {
+  transform: scale(0.985);
+}
+
+.catch-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.catch-button__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.catch-button__text em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.active-trip__map-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.active-trip__ended-hint {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.active-trip__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.active-trip__heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.active-trip__count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.active-trip__gear-empty {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* 出勤装备清单 */
+.gear-ref-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gear-ref {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+}
+
+.gear-ref__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+.gear-ref__name--deleted {
+  font-weight: 400;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.gear-ref__brand {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.active-trip__end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--lure) 40%, var(--border));
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--lure);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.active-trip__end:hover {
+  border-color: var(--lure);
+  background: color-mix(in srgb, var(--lure) 8%, transparent);
+}
+
+.active-trip__end:focus-visible {
+  outline: 2px solid var(--lure);
+  outline-offset: 2px;
+}
+
+/* 「管理」按钮在 head 行里不参与换行 */
+.active-trip__head .link-btn:disabled {
+  color: var(--text-muted);
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: none;
+}

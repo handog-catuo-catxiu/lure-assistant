@@ -1,3 +1,11 @@
+/*
+ * 底部导航：首页｜装备｜出勤｜钓点｜我的。
+ *
+ * 中间那个「出勤」按钮是这一版的重点：它比普通图标大一圈、整体抬到 Dock
+ * 上沿之上，所以 Dock 这一层**不能裁切子元素**（overflow 保持默认的 visible）。
+ * 整条 Dock 用 translate 做收起动画，收起时要多推一段距离，
+ * 否则突出在外的那半个六边形会在屏幕底部露出来。
+ */
 .bottom-nav {
   /*
    * 固定在视口底部，不参与页面内容滚动。
@@ -11,12 +19,16 @@
   /* 手机上就是整屏宽；宽屏下和 .app-shell 一样居中并限制宽度 */
   max-width: 480px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* 五等分；minmax(0,1fr) 让窄屏（320px）也不会被内容顶宽而横向溢出 */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
   /* 底部内边距带上 iPhone 安全区，Home 指示条不会压住导航项 */
-  padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
+  padding: 8px 4px calc(env(safe-area-inset-bottom) + 6px);
   border-top: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(12px);
+  /* 磨砂玻璃，但留足够的实底色：文字压在彩色照片上也要看得清 */
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
   /*
    * 用 translate3d 而不是 translate：强制生成合成层，滑出屏幕后图层不会被回收，
    * 回来时首帧就有过渡（否则 iOS 上会看到没有动画的「闪现」）。
@@ -30,14 +42,14 @@
 }
 
 /*
- * 向下滚动时整条滑出屏幕。多移 1px 是为了把上边框也带出去，
- * 否则屏幕上会残留一条 1px 的线。
+ * 向下滚动时整条滑出屏幕。多推的 72px 是给中间那个凸出来的六边形留的：
+ * 它比 Dock 上沿还高 26px，只推 100% 的话会在屏幕最下面露出一截。
  *
  * 过渡写在两个状态里而不是只写一处：CSS 过渡取的是「变化后」那份样式的值，
  * 所以收起时用这里更快的 200ms ease-in，展开时用上面 240ms 的 ease-out。
  */
 .bottom-nav--hidden {
-  transform: translate3d(-50%, calc(100% + 1px), 0);
+  transform: translate3d(-50%, calc(100% + 72px), 0);
   transition: transform 200ms cubic-bezier(0.4, 0, 1, 1);
 }
 
@@ -46,32 +58,41 @@
   transform: translate3d(-50%, 0, 0);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  /* 两个状态都要覆盖，否则收起时仍会走 .bottom-nav--hidden 里的过渡 */
-  .bottom-nav,
-  .bottom-nav--hidden {
-    transition: none;
-  }
-}
-
 .bottom-nav__item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 3px;
-  padding: 8px 0;
+  min-width: 0;
+  /* 触摸目标不低于 44px（含图标与文字） */
+  min-height: 50px;
+  padding: 8px 2px 6px;
   border: none;
   border-radius: 12px;
   background: none;
   color: var(--text-muted);
   font: inherit;
   font-size: 11px;
+  line-height: 1;
   cursor: pointer;
   transition: color 0.18s ease;
 }
 
-.bottom-nav__item:hover {
-  color: var(--accent);
+/* 窄屏（iPhone SE 一代那种 320px）再收一点，保证五栏排得下 */
+@media (max-width: 340px) {
+  .bottom-nav__item,
+  .trip-fab {
+    font-size: 10px;
+  }
+}
+
+.bottom-nav__label {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bottom-nav__item--active {
@@ -79,7 +100,147 @@
   font-weight: 600;
 }
 
-.bottom-nav__item:focus-visible {
+/* 选中态：图标上方一小段指示条，比只换个颜色更容易一眼看到 */
+.bottom-nav__item--active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 16px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.bottom-nav__item:focus-visible,
+.trip-fab:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
+}
+
+/* ------------------------------ 中间的出勤按钮 ------------------------------ */
+
+.bottom-nav__center {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+}
+
+.trip-fab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 0 0 6px;
+  border: none;
+  background: none;
+  color: var(--warm);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.16s ease;
+}
+
+.trip-fab__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 58px;
+  /*
+   * 关键的一抬：负外边距让六边形整体越过 Dock 上沿 26px。
+   * 用负 margin 而不是绝对定位，是为了不改变这一格在网格里的高度，
+   * 这样 Dock 的总高度不变，内容区的 --dock-space 留白也不用跟着调。
+   */
+  margin-top: -34px;
+  margin-bottom: 2px;
+}
+
+/* 进行中的呼吸光晕。纯装饰，关掉不影响按钮的含义 */
+.trip-fab__glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--warm) 40%, transparent),
+    transparent 68%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trip-fab__badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 58px;
+  color: #fff;
+  background: linear-gradient(168deg, #ffab4d 0%, #f97316 52%, #df5a05 100%);
+  box-shadow: 0 7px 14px -7px rgba(217, 90, 6, 0.65);
+  /*
+   * 圆角六边形。用 SVG 蒙版而不是 clip-path: polygon()：
+   * 多边形只能切出尖角，蒙版里的路径可以带圆角，边缘更干净。
+   * 六边形尖顶朝上、尖底朝下，形似一枚盾牌，比圆形按钮更像户外装备。
+   */
+  --trip-fab-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'><path d='M60.45 94.1Q50 100 39.55 94.1L14.45 79.9Q4 74 4 62L4 38Q4 26 14.45 20.1L39.55 5.9Q50 0 60.45 5.9L85.55 20.1Q96 26 96 38L96 62Q96 74 85.55 79.9Z' fill='black'/></svg>");
+  -webkit-mask: var(--trip-fab-mask) center / 100% 100% no-repeat;
+  mask: var(--trip-fab-mask) center / 100% 100% no-repeat;
+}
+
+.trip-fab:active .trip-fab__badge {
+  transform: scale(0.95);
+}
+
+.trip-fab__label {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 进行中：按钮常亮 + 缓慢呼吸，暗示「还在记录」 */
+.trip-fab--live .trip-fab__glow {
+  opacity: 1;
+  animation: trip-fab-pulse 2.6s ease-in-out infinite;
+}
+
+/* 停在出勤标签页时给个选中感（其余情况这个按钮是动作，不是当前页） */
+.trip-fab--current .trip-fab__label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes trip-fab-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 两个状态都要覆盖，否则收起时仍会走 .bottom-nav--hidden 里的过渡 */
+  .bottom-nav,
+  .bottom-nav--hidden,
+  .trip-fab {
+    transition: none;
+  }
+
+  .trip-fab--live .trip-fab__glow {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .trip-fab:active .trip-fab__badge {
+    transform: none;
+  }
 }

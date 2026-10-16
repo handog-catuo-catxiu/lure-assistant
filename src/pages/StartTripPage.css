@@ -1,0 +1,293 @@
+.start-trip {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 8px;
+}
+
+/* 步骤指示 */
+.start-trip__steps {
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 14px 16px 0;
+}
+
+.start-trip__step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.start-trip__step-index {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 18%, transparent);
+  font-size: 11px;
+}
+
+.start-trip__step--current {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.start-trip__step--current .start-trip__step-index {
+  background: var(--accent);
+  color: #fff;
+}
+
+.start-trip__step--done {
+  color: var(--text);
+}
+
+.start-trip__step--done .start-trip__step-index {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+}
+
+.start-trip__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+}
+
+/* 确认步骤里的「记录 GPS 轨迹」开关 */
+.start-trip__track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.start-trip__track-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.start-trip__track-text em {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.start-trip__hint {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* 确认页 */
+.start-trip__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.start-trip__summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.start-trip__summary-row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.start-trip__summary-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.start-trip__summary-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+  text-align: right;
+  word-break: break-word;
+}
+
+.start-trip__summary-value--muted {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.start-trip__gear-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.start-trip__gear {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.start-trip__gear-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+.start-trip__gear-brand {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.start-trip__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--lure);
+}
+
+/* 底部操作区（跟随内容，不遮挡底部导航） */
+.start-trip__foot {
+  display: flex;
+  gap: 10px;
+  padding: 4px 16px 16px;
+}
+
+.start-trip__next {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 15px 16px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #12909f, #0c6a78);
+  color: #fff;
+  font: inherit;
+  font-size: 15.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -8px rgba(12, 106, 120, 0.9);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.start-trip__next:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.start-trip__next:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.start-trip__next:disabled {
+  background: color-mix(in srgb, var(--text-muted) 25%, var(--surface));
+  color: var(--text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.start-trip__next:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.start-trip__skip {
+  flex: 0 0 auto;
+  padding: 15px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.start-trip__skip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.start-trip__skip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 已有进行中的出勤时的提示 */
+.start-trip__notice {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px 16px;
+}
+
+.start-trip__notice-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.start-trip__notice-btn {
+  align-self: flex-start;
+  padding: 12px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.start-trip__notice-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}

@@ -58,7 +58,20 @@ jobs:
       - name: 校验品牌 Logo 登记表
         run: npm run check:logos
 
+      # 三个值都从仓库 Variables 里读（Settings → Secrets and variables
+      # → Actions → Variables），不写进代码：
+      #   VITE_AMAP_KEY                  Web 端 Key，公开信息，靠高德的域名白名单保护
+      #   VITE_AMAP_SECURITY_PROXY_HOST  安全密钥代理地址，本来就要给浏览器用
+      #   VITE_AI_PROXY_HOST             AI 推荐代理地址，同样只是地址、不含密钥
+      # 高德安全密钥和 DeepSeek 的 API Key **都不在**这里，也永远不会进 CI：
+      # 它们只存在代理服务自己的环境变量里（wrangler secret put）。
+      # 三个值都没配也能构建成功：地图会提示「还没有配置高德地图 Key」，
+      # 鱼种推荐退回本地规则并如实写明「这次没用到 AI」。
       - name: 构建
+        env:
+          VITE_AMAP_KEY: ${{ vars.VITE_AMAP_KEY }}
+          VITE_AMAP_SECURITY_PROXY_HOST: ${{ vars.VITE_AMAP_SECURITY_PROXY_HOST }}
+          VITE_AI_PROXY_HOST: ${{ vars.VITE_AI_PROXY_HOST }}
         run: npm run build
 
       - name: 上传构建产物
