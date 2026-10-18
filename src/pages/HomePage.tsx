@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ChevronRightIcon,
   ClockIcon,
@@ -21,6 +21,8 @@ import { useFishingWeather } from '../hooks/useFishingWeather'
 import { useNow } from '../hooks/useNow'
 import { usePlaceName } from '../hooks/usePlaceName'
 import type { SpeciesAdvice } from '../lib/fish/recommend'
+import { loadPrefs, savePref } from '../lib/prefs'
+import { subscribeRemoteApplied } from '../lib/sync/events'
 import { WATER_LABELS, type WaterType } from '../lib/fish/species'
 import { formatDate, formatDateCN, formatTimer } from '../lib/tripFormat'
 import type { WeatherKind, WeatherNow } from '../lib/weather'
@@ -45,48 +47,6 @@ interface HomePageProps {
   onResumeTrip: () => void
   /** 点推荐卡片进鱼类百科 */
   onOpenSpecies: (speciesId: string) => void
-}
-
-/** 用户手动选的水型，记在本机；没选过就是「自动判断」 */
-const WATER_PREF_KEY = 'luremate:fish-water:v1'
-/** 用户选中的「参考钓点」，记在本机；没选就是按当前位置做区域鱼情参考 */
-const REF_SPOT_KEY = 'luremate:fish-ref-spot:v1'
-
-function loadRefSpot(): string | null {
-  try {
-    const saved = localStorage.getItem(REF_SPOT_KEY)
-    return saved && saved.length > 0 ? saved : null
-  } catch {
-    // 隐私模式下读不到，按「当前位置」处理
-    return null
-  }
-}
-
-function saveRefSpot(spotId: string | null): void {
-  try {
-    if (spotId) localStorage.setItem(REF_SPOT_KEY, spotId)
-    else localStorage.removeItem(REF_SPOT_KEY)
-  } catch {
-    // 存不下不影响这次的推荐
-  }
-}
-
-function loadWaterPref(): WaterType {
-  try {
-    const saved = localStorage.getItem(WATER_PREF_KEY)
-    if (saved === 'still' || saved === 'flowing' || saved === 'sea') return saved
-  } catch {
-    // 隐私模式下读不到，按自动判断处理
-  }
-  return 'unknown'
-}
-
-function saveWaterPref(value: WaterType): void {
-  try {
-    localStorage.setItem(WATER_PREF_KEY, value)
-  } catch {
-    // 存不下也不影响这次的推荐
-  }
 }
 
 /** 参考位置最多列出几个钓点：再多就不是「顺手挑一个」而是管理列表了 */
@@ -138,8 +98,21 @@ export default function HomePage({
   const month = new Date(now).getMonth() + 1
   const today = formatDate(now)
 
-  const [waterPref, setWaterPref] = useState<WaterType>(() => loadWaterPref())
-  const [refSpotId, setRefSpotId] = useState<string | null>(() => loadRefSpot())
+  const initialPrefs = useMemo(() => loadPrefs(), [])
+  const [waterPref, setWaterPref] = useState<WaterType>(initialPrefs.homeWater)
+  const [refSpotId, setRefSpotId] = useState<string | null>(initialPrefs.homeRefSpot)
+
+  // 云端偏好合并完成后刷新首页选择，不需要用户手动刷新页面
+  useEffect(
+    () =>
+      subscribeRemoteApplied((kind) => {
+        if (kind !== 'pref') return
+        const next = loadPrefs()
+        setWaterPref(next.homeWater)
+        setRefSpotId(next.homeRefSpot)
+      }),
+    [],
+  )
 
   /*
    * 参考位置：默认用当前位置；用户也可以挑一个已有的钓点。
@@ -194,12 +167,12 @@ export default function HomePage({
 
   function chooseWater(value: WaterType) {
     setWaterPref(value)
-    saveWaterPref(value)
+    savePref('homeWater', value)
   }
 
   function chooseRefSpot(spotId: string | null) {
     setRefSpotId(spotId)
-    saveRefSpot(spotId)
+    savePref('homeRefSpot', spotId)
   }
 
   return (

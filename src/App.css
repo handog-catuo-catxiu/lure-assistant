@@ -10,6 +10,16 @@
   box-shadow: 0 0 0 1px var(--border);
 }
 
+.app-boot {
+  align-items: center;
+  justify-content: center;
+}
+
+.app-boot__text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .app-main {
   flex: 1;
   display: flex;

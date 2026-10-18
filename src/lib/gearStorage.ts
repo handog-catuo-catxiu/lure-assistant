@@ -6,6 +6,15 @@ import {
   type GearSpec,
   type SpecKey,
 } from '../types/gear'
+import {
+  activeScope,
+  isAccountScope,
+  isGuestScope,
+  keyForScope,
+  LEGACY_SCOPE_NAME,
+} from './sync/scope'
+import { markDeleted, markDirty } from './sync/meta'
+import { emitLocalChange, emitRemoteApplied } from './sync/events'
 
 /** localStorage 键名，带版本号方便以后升级数据结构 */
 export const STORAGE_KEY = 'luremate:gear:v1'
@@ -62,19 +71,60 @@ function normalizeItem(value: unknown): GearItem | null {
   }
 }
 
+function storageKeyFor(targetScope: string): string {
+  return keyForScope(STORAGE_KEY, targetScope)
+}
+
+function readRawText(targetScope: string): string | null {
+  try {
+    return localStorage.getItem(storageKeyFor(targetScope))
+  } catch {
+    return null
+  }
+}
+
+/** 只读真实存储，不回退到演示数据；同步和认领都用它，避免把演示装备当成用户数据 */
+export function loadGearRaw(targetScope = activeScope()): GearItem[] {
+  const raw = readRawText(targetScope)
+  if (raw === null) return []
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .map(normalizeItem)
+      .filter((item): item is GearItem => item !== null)
+  } catch {
+    return []
+  }
+}
+
+export function writeGearRaw(
+  items: GearItem[],
+  targetScope = activeScope(),
+): boolean {
+  try {
+    localStorage.setItem(storageKeyFor(targetScope), JSON.stringify(items))
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** 认领本机旧数据时，读取旧键名下的装备（没有存储记录就是空数组） */
+export function loadLegacyGear(): GearItem[] {
+  return loadGearRaw(LEGACY_SCOPE_NAME)
+}
+
 /**
  * 读取装备列表。
- * 只有在本地完全没有存储记录时（首次使用）才返回模拟数据；
- * 用户删除至空列表时存储中是 []，仍以用户数据为准。
+ * 只有在「还没有归属账号、本地也完全没有存储记录」时才返回演示数据；
+ * 账号范围内没有数据就是空，等云端拉取，绝不把演示装备当成用户的云数据。
  */
 export function loadGear(): GearItem[] {
-  let raw: string | null
-  try {
-    raw = localStorage.getItem(STORAGE_KEY)
-  } catch {
-    // 隐私模式等无法访问 localStorage 的场景，退化为只读的模拟数据
-    return MOCK_GEAR
-  }
+  if (isGuestScope()) return []
+
+  const raw = readRawText(activeScope())
+  if (isAccountScope()) return loadGearRaw(activeScope())
 
   if (raw === null) return MOCK_GEAR
 
@@ -89,11 +139,39 @@ export function loadGear(): GearItem[] {
   }
 }
 
-/** 写入装备列表，写入失败不阻塞界面 */
-export function saveGear(items: GearItem[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-  } catch {
-    // 忽略写入失败（存储已满、隐私模式等）
+/**
+ * 写入装备列表并记录同步状态。
+ *
+ * 逐个和上次存储的内容比较：新增/修改标成待上传，删除留下墓碑。
+ * 写入失败不阻塞界面，返回 false 让调用方决定是否提示。
+ */
+export function saveGear(items: GearItem[]): boolean {
+  const previous = loadGearRaw(activeScope())
+  const ok = writeGearRaw(items)
+
+  // 只有本机写入成功后才记录待同步状态；写失败时不能把云端数据误标成删除
+  if (ok) {
+    const previousById = new Map(previous.map((item) => [item.id, item]))
+    const now = Date.now()
+
+    for (const item of items) {
+      const before = previousById.get(item.id)
+      if (!before || JSON.stringify(before) !== JSON.stringify(item)) {
+        markDirty('gear', item.id, now)
+      }
+      previousById.delete(item.id)
+    }
+    for (const removedId of previousById.keys()) {
+      markDeleted('gear', removedId, now)
+    }
+    emitLocalChange('gear')
   }
+  return ok
+}
+
+/** 云端数据合并完成后整体写回，不产生新的待上传记录 */
+export function applyGearFromRemote(items: GearItem[]): boolean {
+  const ok = writeGearRaw(items)
+  if (ok) emitRemoteApplied('gear')
+  return ok
 }

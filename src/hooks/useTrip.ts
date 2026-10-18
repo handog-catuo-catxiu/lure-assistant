@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   applyCatchDraft,
   applySpotDraft,
@@ -19,6 +19,7 @@ import {
   saveSpots,
   saveTrips,
 } from '../lib/tripStorage'
+import { subscribeRemoteApplied } from '../lib/sync/events'
 import type {
   CatchDraft,
   CatchRecord,
@@ -52,6 +53,27 @@ export function useTrip() {
   const spotsRef = useRef(spots)
   const sessionsRef = useRef(sessions)
   const catchesRef = useRef(catches)
+
+  // 云端合并完成后重新读取，正在填写中的表单不受影响（表单状态在弹窗组件里）
+  useEffect(
+    () =>
+      subscribeRemoteApplied((kind) => {
+        if (kind === 'spot') {
+          const next = loadSpots()
+          spotsRef.current = next
+          setSpots(next)
+        } else if (kind === 'trip') {
+          const next = loadTrips()
+          sessionsRef.current = next
+          setSessions(next)
+        } else if (kind === 'catch') {
+          const next = loadCatches()
+          catchesRef.current = next
+          setCatches(next)
+        }
+      }),
+    [],
+  )
 
   /** 先落库再更新界面：写失败就保持原样，由调用方提示用户 */
   const commitSpots = useCallback((next: Spot[]) => {

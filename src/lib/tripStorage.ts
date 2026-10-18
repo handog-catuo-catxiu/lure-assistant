@@ -4,18 +4,32 @@
  * 键名与装备（luremate:gear:v1）完全分开，各存各的，不会互相覆盖。
  * 读取时逐条做校验，坏掉的单条数据丢掉就行，不影响同一份里的其它记录。
  * 只有真的发生改动时才会写入，所以这里读到坏数据也不会把它冲掉。
+ *
+ * 账号范围下所有键名都会加上 `luremate:u:<uid>:` 前缀（见 lib/sync/scope.ts），
+ * 同时把新增/修改/删除登记到同步元数据，供云端增量同步使用。
  */
 import { createId } from './ids'
 import type { CatchRecord, Spot, TripSession, TripStatus } from '../types/trip'
+import {
+  activeScope,
+  keyForScope,
+  LEGACY_SCOPE_NAME,
+} from './sync/scope'
+import { markDeleted, markDirty } from './sync/meta'
+import { emitLocalChange, emitRemoteApplied } from './sync/events'
 
 export const SPOT_KEY = 'luremate:spots:v1'
 export const TRIP_KEY = 'luremate:trips:v1'
 export const CATCH_KEY = 'luremate:catches:v1'
 
-function readRecords(key: string): unknown[] | null {
+function storageKey(base: string, targetScope: string): string {
+  return keyForScope(base, targetScope)
+}
+
+function readRecords(base: string, targetScope: string): unknown[] | null {
   let raw: string | null
   try {
-    raw = localStorage.getItem(key)
+    raw = localStorage.getItem(storageKey(base, targetScope))
   } catch {
     // 隐私模式等读不到 localStorage 的场景：按空数据处理
     return null
@@ -31,9 +45,13 @@ function readRecords(key: string): unknown[] | null {
 }
 
 /** 写入成功返回 true，失败（存储已满、隐私模式等）返回 false 由调用方提示 */
-function writeRecords(key: string, records: unknown[]): boolean {
+function writeRecords(
+  base: string,
+  records: unknown[],
+  targetScope: string,
+): boolean {
   try {
-    localStorage.setItem(key, JSON.stringify(records))
+    localStorage.setItem(storageKey(base, targetScope), JSON.stringify(records))
     return true
   } catch {
     return false
@@ -191,38 +209,145 @@ function normalizeCatch(value: unknown): CatchRecord | null {
   return record
 }
 
-export function loadSpots(): Spot[] {
-  const records = readRecords(SPOT_KEY)
+function normalizeList<T>(
+  records: unknown[] | null,
+  normalize: (value: unknown) => T | null,
+): T[] {
   if (!records) return []
   return records
-    .map(normalizeSpot)
-    .filter((spot): spot is Spot => spot !== null)
+    .map(normalize)
+    .filter((value): value is T => value !== null)
+}
+
+/* ------------------------------- 原始读写 ------------------------------- */
+
+export function loadSpotsRaw(targetScope = activeScope()): Spot[] {
+  return normalizeList(readRecords(SPOT_KEY, targetScope), normalizeSpot)
+}
+
+export function loadTripsRaw(targetScope = activeScope()): TripSession[] {
+  return normalizeList(readRecords(TRIP_KEY, targetScope), normalizeSession)
+}
+
+export function loadCatchesRaw(targetScope = activeScope()): CatchRecord[] {
+  return normalizeList(readRecords(CATCH_KEY, targetScope), normalizeCatch)
+}
+
+export function writeSpotsRaw(
+  spots: Spot[],
+  targetScope = activeScope(),
+): boolean {
+  return writeRecords(SPOT_KEY, spots, targetScope)
+}
+
+export function writeTripsRaw(
+  sessions: TripSession[],
+  targetScope = activeScope(),
+): boolean {
+  return writeRecords(TRIP_KEY, sessions, targetScope)
+}
+
+export function writeCatchesRaw(
+  catches: CatchRecord[],
+  targetScope = activeScope(),
+): boolean {
+  return writeRecords(CATCH_KEY, catches, targetScope)
+}
+
+/* ------------------------------ 旧数据认领 ------------------------------ */
+
+export function loadLegacySpots(): Spot[] {
+  return loadSpotsRaw(LEGACY_SCOPE_NAME)
+}
+
+export function loadLegacyTrips(): TripSession[] {
+  return loadTripsRaw(LEGACY_SCOPE_NAME)
+}
+
+export function loadLegacyCatches(): CatchRecord[] {
+  return loadCatchesRaw(LEGACY_SCOPE_NAME)
+}
+
+/* --------------------------- 带同步标记的保存 --------------------------- */
+
+function diffAndMark<T extends { id: string }>(
+  previous: T[],
+  next: T[],
+  kind: 'spot' | 'trip' | 'catch',
+): void {
+  const previousById = new Map(previous.map((item) => [item.id, item]))
+  const now = Date.now()
+
+  for (const item of next) {
+    const before = previousById.get(item.id)
+    if (!before || JSON.stringify(before) !== JSON.stringify(item)) {
+      markDirty(kind, item.id, now)
+    }
+    previousById.delete(item.id)
+  }
+  for (const removedId of previousById.keys()) {
+    markDeleted(kind, removedId, now)
+  }
+}
+
+export function loadSpots(): Spot[] {
+  return loadSpotsRaw()
 }
 
 export function saveSpots(spots: Spot[]): boolean {
-  return writeRecords(SPOT_KEY, spots)
+  const previous = loadSpotsRaw()
+  const ok = writeSpotsRaw(spots)
+  if (ok) {
+    diffAndMark(previous, spots, 'spot')
+    emitLocalChange('spot')
+  }
+  return ok
 }
 
 export function loadTrips(): TripSession[] {
-  const records = readRecords(TRIP_KEY)
-  if (!records) return []
-  return records
-    .map(normalizeSession)
-    .filter((session): session is TripSession => session !== null)
+  return loadTripsRaw()
 }
 
 export function saveTrips(sessions: TripSession[]): boolean {
-  return writeRecords(TRIP_KEY, sessions)
+  const previous = loadTripsRaw()
+  const ok = writeTripsRaw(sessions)
+  if (ok) {
+    diffAndMark(previous, sessions, 'trip')
+    emitLocalChange('trip')
+  }
+  return ok
 }
 
 export function loadCatches(): CatchRecord[] {
-  const records = readRecords(CATCH_KEY)
-  if (!records) return []
-  return records
-    .map(normalizeCatch)
-    .filter((record): record is CatchRecord => record !== null)
+  return loadCatchesRaw()
 }
 
 export function saveCatches(catches: CatchRecord[]): boolean {
-  return writeRecords(CATCH_KEY, catches)
+  const previous = loadCatchesRaw()
+  const ok = writeCatchesRaw(catches)
+  if (ok) {
+    diffAndMark(previous, catches, 'catch')
+    emitLocalChange('catch')
+  }
+  return ok
+}
+
+/* ------------------------------ 云端写入 ------------------------------ */
+
+export function applySpotsFromRemote(spots: Spot[]): boolean {
+  const ok = writeSpotsRaw(spots)
+  if (ok) emitRemoteApplied('spot')
+  return ok
+}
+
+export function applyTripsFromRemote(sessions: TripSession[]): boolean {
+  const ok = writeTripsRaw(sessions)
+  if (ok) emitRemoteApplied('trip')
+  return ok
+}
+
+export function applyCatchesFromRemote(catches: CatchRecord[]): boolean {
+  const ok = writeCatchesRaw(catches)
+  if (ok) emitRemoteApplied('catch')
+  return ok
 }

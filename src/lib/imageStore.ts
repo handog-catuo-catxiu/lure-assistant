@@ -18,6 +18,7 @@ import {
   idbTransactionDone,
   toIdbErrorMessage,
 } from './idb'
+import { markDeleted, markDirty } from './sync/meta'
 
 /** 图片种类：original = 用户原始上传，ai = 未来 AI 生成结果 */
 export type ImageKind = 'original' | 'ai'
@@ -79,6 +80,23 @@ export function validateImageFile(file: File): void {
   }
 }
 
+/** 写入图片 Blob，默认会登记为待上传 */
+async function writeImageRecord(
+  record: StoredImage,
+  options: { markSync: boolean; dbName?: string },
+): Promise<StoredImage> {
+  await idbTransactionDone(
+    IMAGE_STORE,
+    'readwrite',
+    (store) => {
+      store.put(record)
+    },
+    options.dbName,
+  )
+  if (options.markSync) markDirty('gearImage', record.gearId, record.updatedAt)
+  return record
+}
+
 /** 保存图片；同一个 gearId + kind 会被覆盖（替换照片） */
 export async function putImage(
   gearId: string,
@@ -93,35 +111,92 @@ export async function putImage(
     size: blob.size,
     updatedAt: Date.now(),
   }
-  await idbTransactionDone(IMAGE_STORE, 'readwrite', (store) => {
-    store.put(record)
-  })
-  return record
+  return writeImageRecord(record, { markSync: true })
+}
+
+/** 从云端下载回来的图片：写本地但不当成新的本地上传 */
+export async function putImageFromRemote(
+  gearId: string,
+  blob: Blob,
+  updatedAt: number,
+  kind: ImageKind = 'original',
+): Promise<StoredImage> {
+  return writeImageRecord(
+    {
+      gearId,
+      kind,
+      blob,
+      type: blob.type,
+      size: blob.size,
+      updatedAt,
+    },
+    { markSync: false },
+  )
+}
+
+/** 认领本机旧数据时，把旧库里的图片复制到当前账号库 */
+export async function copyImageRecord(
+  record: StoredImage,
+  targetDbName?: string,
+): Promise<void> {
+  await writeImageRecord(record, { markSync: false, dbName: targetDbName })
 }
 
 export function getImage(
   gearId: string,
   kind: ImageKind = 'original',
+  dbName?: string,
 ): Promise<StoredImage | null> {
-  return idbRequest<StoredImage | undefined>(IMAGE_STORE, 'readonly', (store) =>
-    store.get([gearId, kind]) as IDBRequest<StoredImage | undefined>,
+  return idbRequest<StoredImage | undefined>(
+    IMAGE_STORE,
+    'readonly',
+    (store) => store.get([gearId, kind]) as IDBRequest<StoredImage | undefined>,
+    dbName,
   ).then((record) => record ?? null)
 }
 
 /** 读取某一种类的全部图片，用于一次性拿到所有缩略图 */
-export async function getAllImages(kind: ImageKind = 'original'): Promise<StoredImage[]> {
-  const records = await idbRequest<StoredImage[]>(IMAGE_STORE, 'readonly', (store) =>
-    store.getAll() as IDBRequest<StoredImage[]>,
+export async function getAllImages(
+  kind: ImageKind = 'original',
+  dbName?: string,
+): Promise<StoredImage[]> {
+  const records = await idbRequest<StoredImage[]>(
+    IMAGE_STORE,
+    'readonly',
+    (store) => store.getAll() as IDBRequest<StoredImage[]>,
+    dbName,
   )
   return records.filter((record) => record.kind === kind)
+}
+
+function deleteImageRecord(
+  gearId: string,
+  kind: ImageKind,
+  options: { markSync: boolean; dbName?: string },
+): Promise<void> {
+  return idbTransactionDone(
+    IMAGE_STORE,
+    'readwrite',
+    (store) => {
+      store.delete([gearId, kind])
+    },
+    options.dbName,
+  ).then(() => {
+    if (options.markSync) markDeleted('gearImage', gearId)
+  })
 }
 
 export function deleteImage(
   gearId: string,
   kind: ImageKind = 'original',
 ): Promise<void> {
+  return deleteImageRecord(gearId, kind, { markSync: true })
+}
+
+export function deleteImageFromRemote(gearId: string): Promise<void> {
   return idbTransactionDone(IMAGE_STORE, 'readwrite', (store) => {
-    store.delete([gearId, kind])
+    store.delete([gearId, 'original'])
+    store.delete([gearId, 'ai'])
   })
 }
 
@@ -130,10 +205,28 @@ export function deleteImagesOfGear(gearId: string): Promise<void> {
   return idbTransactionDone(IMAGE_STORE, 'readwrite', (store) => {
     store.delete([gearId, 'original'])
     store.delete([gearId, 'ai'])
+  }).then(() => {
+    markDeleted('gearImage', gearId)
   })
 }
 
 /* ------------------------------- 渔获照片 ------------------------------- */
+
+async function writeCatchPhotoRecord(
+  record: StoredCatchPhoto,
+  options: { markSync: boolean; dbName?: string },
+): Promise<StoredCatchPhoto> {
+  await idbTransactionDone(
+    CATCH_PHOTO_STORE,
+    'readwrite',
+    (store) => {
+      store.put(record)
+    },
+    options.dbName,
+  )
+  if (options.markSync) markDirty('catchImage', record.catchId, record.updatedAt)
+  return record
+}
 
 /** 保存渔获照片；同一条渔获重复上传会覆盖 */
 export async function putCatchPhoto(
@@ -149,26 +242,76 @@ export async function putCatchPhoto(
     size: blob.size,
     updatedAt: Date.now(),
   }
-  await idbTransactionDone(CATCH_PHOTO_STORE, 'readwrite', (store) => {
-    store.put(record)
-  })
-  return record
+  return writeCatchPhotoRecord(record, { markSync: true })
+}
+
+/** 从云端下载回来的渔获照片 */
+export async function putCatchPhotoFromRemote(
+  catchId: string,
+  blob: Blob,
+  updatedAt: number,
+  kind: ImageKind = 'original',
+): Promise<StoredCatchPhoto> {
+  return writeCatchPhotoRecord(
+    {
+      catchId,
+      kind,
+      blob,
+      type: blob.type,
+      size: blob.size,
+      updatedAt,
+    },
+    { markSync: false },
+  )
+}
+
+/** 认领本机旧数据时，把旧库里的渔获照片复制到账号库 */
+export async function copyCatchPhotoRecord(
+  record: StoredCatchPhoto,
+  targetDbName?: string,
+): Promise<void> {
+  await writeCatchPhotoRecord(record, { markSync: false, dbName: targetDbName })
+}
+
+/** 读取一条渔获的照片 */
+export function getCatchPhoto(
+  catchId: string,
+  kind: ImageKind = 'original',
+  dbName?: string,
+): Promise<StoredCatchPhoto | null> {
+  return idbRequest<StoredCatchPhoto | undefined>(
+    CATCH_PHOTO_STORE,
+    'readonly',
+    (store) => store.get([catchId, kind]) as IDBRequest<StoredCatchPhoto | undefined>,
+    dbName,
+  ).then((record) => record ?? null)
 }
 
 /** 读取全部渔获照片，用于一次性拿到所有渔获缩略图 */
 export async function getAllCatchPhotos(
   kind: ImageKind = 'original',
+  dbName?: string,
 ): Promise<StoredCatchPhoto[]> {
   const records = await idbRequest<StoredCatchPhoto[]>(
     CATCH_PHOTO_STORE,
     'readonly',
     (store) => store.getAll() as IDBRequest<StoredCatchPhoto[]>,
+    dbName,
   )
   return records.filter((record) => record.kind === kind)
 }
 
 /** 删除渔获时清掉它的照片 */
 export function deleteCatchPhotos(catchId: string): Promise<void> {
+  return idbTransactionDone(CATCH_PHOTO_STORE, 'readwrite', (store) => {
+    store.delete([catchId, 'original'])
+    store.delete([catchId, 'ai'])
+  }).then(() => {
+    markDeleted('catchImage', catchId)
+  })
+}
+
+export function deleteCatchPhotoFromRemote(catchId: string): Promise<void> {
   return idbTransactionDone(CATCH_PHOTO_STORE, 'readwrite', (store) => {
     store.delete([catchId, 'original'])
     store.delete([catchId, 'ai'])

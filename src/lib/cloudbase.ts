@@ -12,7 +12,8 @@
  * - 退出登录：auth.signOut()
  *
  * Publishable Key 是 CloudBase 的前端公开凭据（不是 SecretKey）：
- * 手机号登录本身不需要它；以后接入 PostgreSQL 装备同步时再配置。
+ * 手机号登录本身不需要它；云同步和对象存储需要配置它。
+ * 未配置时前端只使用本机存储，不发送注定失败的同步请求。
  */
 import type { Cloudbase } from '@cloudbase/js-sdk/app'
 import type { AuthOtpResponse, SignInRes } from '@cloudbase/js-sdk/auth'
@@ -22,6 +23,14 @@ const REGION = 'ap-shanghai'
 
 const runtimeEnv = import.meta.env as Record<string, string | undefined>
 const publishableKey = runtimeEnv.VITE_PUBLISHABLE_KEY?.trim()
+
+/**
+ * 数据库与对象存储的公开客户端凭据是否已经配置。
+ * 没配置时登录仍可用，但同步引擎会停在本机模式，不去发必然失败的请求。
+ */
+export function hasPublishableKey(): boolean {
+  return Boolean(publishableKey)
+}
 
 /** 认证层只依赖 v3 的这三个方法，便于以后替换或扩展而不影响页面。 */
 export interface CloudbaseAuth {

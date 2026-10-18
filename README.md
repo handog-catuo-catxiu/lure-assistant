@@ -1,7 +1,8 @@
 # 路亚助手 LureMate
 
 路亚出勤记录：装备管理、钓点、出勤、一键上鱼、GPS 轨迹与轨迹回放。
-React + TypeScript + Vite，手机端优先，数据全部存在本机（localStorage + IndexedDB）。
+React + TypeScript + Vite，手机端优先。数据先写本机（localStorage + IndexedDB），
+登录后可增量同步到 CloudBase；未登录或断网时照常使用。
 
 地图和定位用的都是**高德 JS API 2.0**（原先的 Leaflet + OpenStreetMap、浏览器原生
 `navigator.geolocation` 都已经移除，全项目只有一套定位）。
@@ -69,11 +70,61 @@ AMAP_SECURITY_CODE=你的安全密钥
 没有第 2 步里的代理时：线上只能显示底图、轨迹和标记，地名识别与地点搜索会明确提示缺代理，
 可以让用户手写地名。
 
-## CloudBase 账号登录（手机号验证码）
+## CloudBase 账号登录与云同步
 
 「我的」页支持中国大陆手机号（+86）验证码登录，未注册的手机号验证通过后会自动创建账号。
-当前只做身份登录，**不同步任何本地记录**；出勤、装备、钓点、渔获和照片仍然只存在本机。
-登录后「我的」页只显示脱敏号码（例如 `138****8000`），退出登录后本地数据不受影响。
+登录后「我的」页只显示脱敏号码（例如 `138****8000`），身份以 `session.user.id`
+（CloudBase UID）为准，手机号只用于展示。
+
+登录后会把以下**真实用户数据**增量同步到 CloudBase（PostgreSQL + 对象存储）：
+
+- 个人装备（含官方装备 id 关联、购买日期、备注等用户自己的字段）
+- 装备照片
+- 钓点、出勤、渔获
+- 渔获照片
+- 出勤 GPS 轨迹点
+- 首页「参考钓点 / 水型」两个跨设备偏好
+
+天气、地图、页面状态、AI 推荐结果等临时数据不同步。官方装备目录是公共只读数据，
+不会复制到每个用户账号里。
+
+### 本机数据与账号隔离
+
+- 未登录且从未导入过：继续使用原有键名（`luremate:gear:v1` 等），本机数据归属不明。
+- 登录后：所有本地数据按 UID 分库分键（`luremate:u:<uid>:`、`luremate-u_<uid>`），
+  不同账号互相看不到；退出登录后进入 `guest` 范围，也不再展示上一个账号的数据。
+- **登录不会自动上传旧的本机数据。** 「我的」页会提示「导入本机数据」，
+  只有用户主动点击才会执行；导入是**复制**，旧数据原样保留，失败可重试。
+- 导入按 id 合并、重复执行不会重复上传；装备/出勤/渔获之间的 id 引用保持不变。
+- 这份本机旧数据一旦被某个账号导入，另一个账号不能再导入同一份；
+  但旧键名本身始终不删除。
+
+### 同步行为
+
+- 本机修改先落盘，再登记待上传；断网时保留，联网后自动重试。
+- 删除使用墓碑（`deleted_at`），不会因为「本地没有」就把云端记录误删。
+- 拉取是增量的（服务端游标），冲突按 `client_updated_at` 的「后写者胜」处理；
+  数据库触发器也会拒绝比现有行更旧的更新，避免慢时钟设备覆盖新数据。
+- 图片上传成功但数据库写入失败、或数据库成功但图片失败，都会保留待重试状态。
+- 「我的」页顶部显示同步状态：同步中 / 已同步 / 等待网络 / 同步失败（可手动重试）。
+  只保存在本机时会明确提示「已保存在本机，等待同步。」
+
+### 官方装备目录
+
+官方装备单独存放在 `catalog_brands` / `catalog_series` / `catalog_gear` /
+`catalog_gear_variants` / `catalog_sources`，和用户个人装备表分开：
+
+- 所有登录用户只能读 `review_status = 'approved'` 且未下架的记录；
+  普通用户不能新增、修改、删除官方数据（RLS + 管理函数双重限制）。
+- 列表走服务端分页、关键词搜索和分类筛选，不一次性下载整个目录；
+  浏览过的页面缓存在本机，可离线查看。
+- 装备关联的是稳定的 `gear-...` 官方 ID；用户自己的购买信息、备注、照片存在个人表，
+  官方资料更新不会覆盖个人字段，官方下架也不会删除用户的装备。
+- 新品牌、新型号通过 CSV 批量导入，不需要发版：
+  模板见 `cloudbase/catalog/catalog.template.csv`，完整说明见
+  [`cloudbase/catalog/README.md`](cloudbase/catalog/README.md)。
+- 导入的数据默认 `pending_review`，必须人工审核后才能公开；
+  带图片的记录必须同时提供 `source_url` 和图片授权状态，不默认抓取、发布第三方图片。
 
 代码使用 CloudBase Auth v3（PostgreSQL 环境推荐接口）：
 
@@ -84,8 +135,8 @@ AMAP_SECURITY_CODE=你的安全密钥
 
 不使用 v2 的 `getVerification` / `signInWithEmail` / `getLoginState` / `getCurrentUser`。
 账号身份以 `session.user.id`（CloudBase UID）为准，手机号只用于展示；
-以后做装备云同步时，数据归属也使用 UID，不使用手机号。
-前端只带公开的环境 ID（以及可选的 Publishable Key），不需要也不允许配置 SecretId / SecretKey。
+云同步的数据归属同样只认 UID，不使用手机号。
+前端只带公开的环境 ID 和 Publishable Key，不需要也不允许配置 SecretId / SecretKey。
 
 ### 控制台配置（需要手动确认一次）
 
@@ -101,6 +152,42 @@ AMAP_SECURITY_CODE=你的安全密钥
 
    安全域名**不要带 `https://`、不要带路径**，也不支持通配符；
    没加时登录请求会被拒绝（常见错误码 `INVALID_REQUEST_SOURCE`）。
+4. 控制台创建 **Publishable Key**（数据库/对象存储的公开客户端凭据），
+   填到前端环境变量 `VITE_PUBLISHABLE_KEY`。它会被打包进前端，这是官方设计；
+   **SecretId / SecretKey / Service Role / 数据库管理员密码绝不能出现在前端或仓库里。**
+
+### 数据库与对象存储初始化（需要手动执行一次）
+
+SQL 文件都在 `cloudbase/sql/`，**按顺序执行**：
+
+| 顺序 | 文件 | 作用 |
+| --- | --- | --- |
+| 1 | `001_catalog.sql` | 官方装备目录、规格版本、来源、审核状态、公共只读 RLS |
+| 2 | `002_user_data.sql` | 个人装备/钓点/出勤/渔获/轨迹/偏好/图片元数据，UID 行级隔离 |
+| 3 | `003_storage.sql` | 私有用户图片桶、公开官方图片桶及路径级权限 |
+| 4 | `004_catalog_review.sql` | 管理员审核/发布函数（拒绝普通用户） |
+
+在 CloudBase 控制台的 PostgreSQL 里依次执行，或用 CLI（需先登录并确认目标环境）：
+
+```bash
+npx --yes --package @cloudbase/cli@3.8.7 tcb db execute \
+  --envId luremate-d5gilu0y4efa3b802 --role postgres \
+  --sql "$(cat cloudbase/sql/001_catalog.sql)"
+```
+
+每个文件都是可重复执行的（`if not exists` / `drop policy if exists`），
+但**首次执行前请先备份并确认环境**。对象存储会在 `003_storage.sql` 中创建两个桶：
+
+- `luremate-user-media`（私有）：路径第一段必须是 UID，用户只能读写自己的目录；
+- `luremate-catalog`（公开读）：只由管理员导入官方图片，前端不能写入。
+
+官方目录 CSV 导入流程见 `cloudbase/catalog/README.md`；
+导入脚本只生成 SQL，不直接连数据库：
+
+```bash
+node scripts/import-catalog-csv.mjs --dry-run
+node scripts/import-catalog-csv.mjs
+```
 
 ### 环境变量
 
@@ -109,16 +196,13 @@ AMAP_SECURITY_CODE=你的安全密钥
 
 ```
 VITE_CLOUDBASE_ENV_ID=你的环境ID
-```
-
-手机号验证码登录不需要 Publishable Key。以后接入 PostgreSQL 装备同步时，
-再在控制台创建 Publishable Key 并配置（它是前端公开凭据，不是 SecretKey）：
-
-```
 VITE_PUBLISHABLE_KEY=你的PublishableKey
+VITE_USER_MEDIA_BUCKET=luremate-user-media
+VITE_CATALOG_BUCKET=luremate-catalog
 ```
 
-环境 ID 和 Publishable Key 都会出现在前端代码里，属于公开信息；
+两个桶名不填时使用上面的默认值；GitHub Actions 里没有传桶名时也会用默认值。
+环境 ID、Publishable Key 和桶名都会出现在前端代码里，属于公开信息；
 SecretId / SecretKey 绝不能放进前端。
 
 ## 定位说明（改代码前请先看这段）

@@ -15,6 +15,8 @@ import {
   idbTransactionDone,
 } from './idb'
 import type { GeoPoint, TrackPoint } from '../types/trip'
+import { scopedKey } from './sync/scope'
+import { emitLocalChange, emitRemoteApplied } from './sync/events'
 
 function asTime(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : 0
@@ -67,10 +69,21 @@ export function toTrackPoint(sessionId: string, position: GeoPoint): TrackPoint 
   }
 }
 
+/** 轨迹点每秒都可能写入，不必每个点都叫醒同步引擎 */
+let lastTrackNotifyAt = 0
+
+function notifyTrackChanged(): void {
+  const now = Date.now()
+  if (now - lastTrackNotifyAt < 15_000) return
+  lastTrackNotifyAt = now
+  emitLocalChange('track')
+}
+
 export async function putTrackPoint(point: TrackPoint): Promise<void> {
   await idbTransactionDone(TRACK_STORE, 'readwrite', (store) => {
     store.put(point)
   })
+  notifyTrackChanged()
 }
 
 /** 写入多个点（批量补写 / 一次事务写一批，比逐个写省事） */
@@ -79,12 +92,30 @@ export async function putTrackPoints(points: TrackPoint[]): Promise<void> {
   await idbTransactionDone(TRACK_STORE, 'readwrite', (store) => {
     for (const point of points) store.put(point)
   })
+  notifyTrackChanged()
+}
+
+/** 从云端拉回来的轨迹点：直接写本地，不触发新的上传 */
+export async function putTrackPointsFromRemote(
+  points: TrackPoint[],
+): Promise<void> {
+  if (points.length === 0) return
+  await idbTransactionDone(TRACK_STORE, 'readwrite', (store) => {
+    for (const point of points) store.put(point)
+  })
+  emitRemoteApplied('track')
 }
 
 /** 读取某场出勤的全部轨迹点，按采集时间升序 */
-export async function getTrackPoints(sessionId: string): Promise<TrackPoint[]> {
-  const records = await idbRequest<unknown[]>(TRACK_STORE, 'readonly', (store) =>
-    store.index(TRACK_SESSION_INDEX).getAll(sessionId) as IDBRequest<unknown[]>,
+export async function getTrackPoints(
+  sessionId: string,
+  dbName?: string,
+): Promise<TrackPoint[]> {
+  const records = await idbRequest<unknown[]>(
+    TRACK_STORE,
+    'readonly',
+    (store) => store.index(TRACK_SESSION_INDEX).getAll(sessionId) as IDBRequest<unknown[]>,
+    dbName,
   )
 
   const points: TrackPoint[] = []
@@ -96,20 +127,46 @@ export async function getTrackPoints(sessionId: string): Promise<TrackPoint[]> {
 }
 
 /** 某场出勤已经记了多少个点（不把整条轨迹读进内存） */
-export async function countTrackPoints(sessionId: string): Promise<number> {
-  return idbRequest<number>(TRACK_STORE, 'readonly', (store) =>
-    store.index(TRACK_SESSION_INDEX).count(sessionId),
+export async function countTrackPoints(
+  sessionId: string,
+  dbName?: string,
+): Promise<number> {
+  return idbRequest<number>(
+    TRACK_STORE,
+    'readonly',
+    (store) => store.index(TRACK_SESSION_INDEX).count(sessionId),
+    dbName,
   )
+}
+
+/** 读取某个数据库里的全部轨迹点（认领旧数据、首次同步时用） */
+export async function getAllTrackPoints(dbName?: string): Promise<TrackPoint[]> {
+  const records = await idbRequest<unknown[]>(
+    TRACK_STORE,
+    'readonly',
+    (store) => store.getAll() as IDBRequest<unknown[]>,
+    dbName,
+  )
+  const points: TrackPoint[] = []
+  for (const record of records) {
+    const point = normalizeTrackPoint(record, '')
+    if (point) points.push(point)
+  }
+  return points.sort((a, b) => a.recordedAt - b.recordedAt)
 }
 
 /* --------------------- 记录开关（极小，放 localStorage） --------------------- */
 
-const TRACK_PREF_KEY = 'luremate:track-pref:v1'
+export const TRACK_PREF_KEY = 'luremate:track-pref:v1'
+
+function trackPrefStorageKey(): string {
+  return scopedKey(TRACK_PREF_KEY)
+}
 
 /** 这场出勤的轨迹记录开关。没记过返回 null，由调用方决定默认值 */
 export function loadTrackPref(sessionId: string): boolean | null {
   try {
-    const raw = localStorage.getItem(TRACK_PREF_KEY)
+    const raw = localStorage.getItem(trackPrefStorageKey())
     if (!raw) return null
     const parsed: unknown = JSON.parse(raw)
     if (typeof parsed !== 'object' || parsed === null) return null
@@ -126,7 +183,7 @@ export function loadTrackPref(sessionId: string): boolean | null {
  */
 export function saveTrackPref(sessionId: string, recordTrack: boolean): void {
   try {
-    const raw = localStorage.getItem(TRACK_PREF_KEY)
+    const raw = localStorage.getItem(trackPrefStorageKey())
     const parsed: unknown = raw ? JSON.parse(raw) : null
     const base: Record<string, boolean> =
       typeof parsed === 'object' && parsed !== null
@@ -139,7 +196,7 @@ export function saveTrackPref(sessionId: string, recordTrack: boolean): void {
     const next: Record<string, boolean> = {}
     for (const key of trimmed) next[key] = base[key]
 
-    localStorage.setItem(TRACK_PREF_KEY, JSON.stringify(next))
+    localStorage.setItem(trackPrefStorageKey(), JSON.stringify(next))
   } catch {
     // 写不进去也不影响出勤，只是下次刷新会退回默认值
   }

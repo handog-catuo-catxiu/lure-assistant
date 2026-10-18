@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadGear, saveGear } from '../lib/gearStorage'
+import { subscribeRemoteApplied } from '../lib/sync/events'
 import type { GearDraft, GearItem } from '../types/gear'
 
 function createId(): string {
@@ -15,9 +16,26 @@ function createId(): string {
 export function useGear() {
   const [items, setItems] = useState<GearItem[]>(loadGear)
 
+  // 初次挂载只是把本地数据读进 state，不需要再写回一遍；
+  // 否则演示数据会在用户没做任何修改时就被写进 localStorage。
+  const mounted = useRef(false)
+
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
     saveGear(items)
   }, [items])
+
+  // 云端合并完成后重新读取本地数据，页面不用刷新
+  useEffect(
+    () =>
+      subscribeRemoteApplied((kind) => {
+        if (kind === 'gear') setItems(loadGear())
+      }),
+    [],
+  )
 
   const addGear = useCallback((draft: GearDraft) => {
     const item: GearItem = { ...draft, id: createId() }

@@ -6,6 +6,7 @@ import Modal from './Modal'
 import ToggleSwitch from './ToggleSwitch'
 import { CATEGORY_ICONS, CloseIcon } from './icons'
 import { findCatalogProduct } from '../lib/gearImage'
+import { fetchCatalogProduct } from '../lib/cloud/catalog'
 import { toImageErrorMessage, validateImageFile } from '../lib/imageStore'
 import {
   ACCESSORY_TYPE_FIELD,
@@ -95,10 +96,32 @@ export default function GearFormModal({
     [],
   )
 
-  const selectedProduct = useMemo(
+  // 浏览缓存/内置示例能同步查到的产品；查不到时下面再异步补一次云端详情
+  const cachedProduct = useMemo(
     () => findCatalogProduct(catalogId),
     [catalogId],
   )
+  const [fetchedProduct, setFetchedProduct] = useState<{
+    id: string
+    product: CatalogProduct | null
+  } | null>(null)
+
+  useEffect(() => {
+    if (!catalogId || cachedProduct) return
+    let cancelled = false
+    void fetchCatalogProduct(catalogId).then((product) => {
+      if (!cancelled) setFetchedProduct({ id: catalogId, product })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [catalogId, cachedProduct])
+
+  const selectedProduct =
+    cachedProduct ??
+    (fetchedProduct && fetchedProduct.id === catalogId
+      ? fetchedProduct.product
+      : null)
 
   /** 已填的周边类型不在内置列表里（旧数据或以后新增的写法），补成一个选项免得被改掉 */
   const customAccessoryType = useMemo(() => {

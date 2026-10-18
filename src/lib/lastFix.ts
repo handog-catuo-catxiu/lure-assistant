@@ -10,6 +10,7 @@
  */
 import { LAST_FIX_MAX_AGE_MS, hasCoordinates } from './geo'
 import type { GeoPoint, LiveGeoPoint } from '../types/trip'
+import { scopedKey } from './sync/scope'
 
 export const LAST_FIX_KEY = 'luremate:last-fix:v1'
 
@@ -26,7 +27,7 @@ function readNumber(value: unknown): number | null {
 export async function loadLastFix(now: number = Date.now()): Promise<GeoPoint | null> {
   let raw: string | null
   try {
-    raw = localStorage.getItem(LAST_FIX_KEY)
+    raw = localStorage.getItem(scopedKey(LAST_FIX_KEY))
   } catch {
     // 隐私模式等读不到 localStorage：当作没有记录
     return null
@@ -71,7 +72,7 @@ export async function saveLastFix(point: LiveGeoPoint): Promise<void> {
   if (point.source === 'ip') return
   try {
     localStorage.setItem(
-      LAST_FIX_KEY,
+      scopedKey(LAST_FIX_KEY),
       JSON.stringify({
         latitude: point.latitude,
         longitude: point.longitude,
@@ -87,7 +88,7 @@ export async function saveLastFix(point: LiveGeoPoint): Promise<void> {
 /** 清掉这份记录（用户主动清除位置信息时用） */
 export async function clearLastFix(): Promise<void> {
   try {
-    localStorage.removeItem(LAST_FIX_KEY)
+    localStorage.removeItem(scopedKey(LAST_FIX_KEY))
   } catch {
     // 忽略
   }

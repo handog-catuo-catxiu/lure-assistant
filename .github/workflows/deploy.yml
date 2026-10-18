@@ -64,21 +64,19 @@ jobs:
       #   VITE_AMAP_SECURITY_PROXY_HOST  安全密钥代理地址，本来就要给浏览器用
       #   VITE_AI_PROXY_HOST             AI 推荐代理地址，同样只是地址、不含密钥
       #   VITE_CLOUDBASE_ENV_ID          固定为本项目 CloudBase 环境 ID，公开信息
-      #   VITE_PUBLISHABLE_KEY           CloudBase Publishable Key，公开信息；
-      #                                 手机号登录可不配，以后接 PG 装备同步时再配
-      # 高德安全密钥、DeepSeek 的 API Key 和 CloudBase 的 SecretKey **都不在**这里，
-      # 也永远不会进 CI：前两者只存在代理服务自己的环境变量里（wrangler secret put），
-      # CloudBase 手机号验证码登录则根本不需要前端持有 SecretKey。
-      # 五个值都没配也能构建成功：地图会提示「还没有配置高德地图 Key」，
-      # 鱼种推荐退回本地规则并如实写明「这次没用到 AI」，账号登录用内置环境 ID。
+      #   VITE_PUBLISHABLE_KEY           云同步必需的公开客户端 Key，不是 SecretKey
+      # 高德安全密钥、DeepSeek API Key 和云端管理员凭据只保存在服务端。
       - name: 构建
         env:
           VITE_AMAP_KEY: ${{ vars.VITE_AMAP_KEY }}
           VITE_AMAP_SECURITY_PROXY_HOST: ${{ vars.VITE_AMAP_SECURITY_PROXY_HOST }}
           VITE_AI_PROXY_HOST: ${{ vars.VITE_AI_PROXY_HOST }}
-          VITE_CLOUDBASE_ENV_ID: luremate-d5gilu0y4efa3b802
+          VITE_CLOUDBASE_ENV_ID: ${{ vars.VITE_CLOUDBASE_ENV_ID }}
           VITE_PUBLISHABLE_KEY: ${{ vars.VITE_PUBLISHABLE_KEY }}
-        run: npm run build
+        run: |
+          test -n "$VITE_PUBLISHABLE_KEY" || { echo "::error::Missing VITE_PUBLISHABLE_KEY"; exit 1; }
+          test "$VITE_CLOUDBASE_ENV_ID" = "luremate-d5gilu0y4efa3b802" || { echo "::error::Incorrect production CloudBase environment"; exit 1; }
+          npm run build
 
       - name: 上传构建产物
         uses: actions/upload-pages-artifact@v3

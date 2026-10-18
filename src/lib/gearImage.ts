@@ -1,4 +1,4 @@
-import { CATALOG } from '../data/catalog'
+import { findCachedCatalogProduct } from './cloud/catalog'
 import { publicUrl } from './publicUrl'
 import type { CatalogPhoto, CatalogProduct } from '../types/catalog'
 
@@ -32,23 +32,38 @@ export function resolveGearImage(options: {
 
   const photo = options.catalogPhoto
   if (photo?.path) {
-    // photo.path 是按 public/ 根路径登记的，补上部署 base 才能真的请求到
-    return { source: 'catalog', url: publicUrl(photo.path), credit: photo.credit }
+    // 站点内路径补上部署 base；对象存储/CDN 的完整网址原样使用
+    return {
+      source: 'catalog',
+      url: publicUrl(photo.path),
+      credit: photo.credit,
+    }
   }
 
   return { source: 'placeholder', url: null }
 }
 
-const CATALOG_BY_ID = new Map(CATALOG.map((product) => [product.id, product]))
-
+/**
+ * 按 id 查图鉴产品。同步读取浏览缓存和内置示例；
+ * 云端数据由 CatalogPicker / 装备表单在打开时异步写入缓存。
+ */
 export function findCatalogProduct(
   catalogId: string | undefined | null,
 ): CatalogProduct | null {
-  if (!catalogId) return null
-  return CATALOG_BY_ID.get(catalogId) ?? null
+  return findCachedCatalogProduct(catalogId)
 }
 
 /** 装备关联的图鉴照片（没有关联或图鉴没有照片时返回 null） */
 export function catalogPhotoOf(catalogId: string | undefined | null): CatalogPhoto | null {
-  return findCatalogProduct(catalogId)?.photo ?? null
+  const product = findCatalogProduct(catalogId)
+  if (!product) return null
+  if (product.photo) return product.photo
+  if (product.imageUrl) {
+    return {
+      path: product.imageUrl,
+      credit: '官方图鉴图片',
+      license: '官方资料',
+    }
+  }
+  return null
 }

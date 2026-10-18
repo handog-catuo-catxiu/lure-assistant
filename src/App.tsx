@@ -12,13 +12,15 @@ import SpeciesPage from './pages/SpeciesPage'
 import StartTripPage from './pages/StartTripPage'
 import TripDetailPage from './pages/TripDetailPage'
 import TripPage from './pages/TripPage'
-import { useAuth } from './hooks/useAuth'
+import { useAuth, type AuthApi } from './hooks/useAuth'
 import { useCatchPhotos } from './hooks/useCatchPhotos'
+import { useCloudSync } from './hooks/useCloudSync'
 import { useDockVisibility } from './hooks/useDockVisibility'
 import { useGear } from './hooks/useGear'
 import { useImageLibrary } from './hooks/useImageLibrary'
 import { useTrip } from './hooks/useTrip'
 import { useTripTrack } from './hooks/useTripTrack'
+import { activateScope, resolveScope } from './lib/sync/scope'
 import { loadTrackPref, saveTrackPref } from './lib/trackStore'
 import './App.css'
 
@@ -41,7 +43,32 @@ type Route =
   /** 单条鱼的百科；back 记下是从首页推荐点进来的还是从百科目录点进来的 */
   | { name: 'species'; speciesId: string; back: 'home' | 'list' }
 
+/**
+ * 账号范围必须在读取任何本地数据之前确定。
+ *
+ * - 登录中先不挂载数据 hook，避免先闪一下本机旧数据
+ * - uid 变化时用 key 重新挂载整个数据层，账号 A 的 React state
+ *   不会残留给账号 B
+ */
 function App() {
+  const auth = useAuth()
+
+  if (auth.status === 'loading') {
+    return (
+      <div className="app-shell app-boot">
+        <span className="app-boot__text">正在检查登录状态…</span>
+      </div>
+    )
+  }
+
+  const scope = resolveScope(auth.user?.uid ?? null)
+  // 在子组件读取 localStorage / IndexedDB 之前切换范围
+  activateScope(scope)
+
+  return <AppShell key={scope} auth={auth} />
+}
+
+function AppShell({ auth }: { auth: AuthApi }) {
   // 首页是默认页
   const [tab, setTab] = useState<TabKey>('home')
   const [route, setRoute] = useState<Route>({ name: 'tabs' })
@@ -54,8 +81,7 @@ function App() {
   const images = useImageLibrary()
   const trip = useTrip()
   const catchPhotos = useCatchPhotos()
-  // 账号状态放在最外层：后续云同步也从这里取 uid，页面之间不会各建一份
-  const auth = useAuth()
+  const sync = useCloudSync(auth.user?.uid ?? null)
 
   /*
    * 轨迹记录器放在最外层：整个应用里只有这一条高德定位循环，
@@ -131,6 +157,7 @@ function App() {
         <MinePage
           trip={trip}
           auth={auth}
+          sync={sync}
           onOpenCatches={() => setRoute({ name: 'catches' })}
           onOpenTrips={() => changeTab('trip')}
           onOpenSpeciesList={() => setRoute({ name: 'species-list' })}

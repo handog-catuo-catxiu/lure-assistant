@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import LoginModal from '../components/LoginModal'
 import PageHeader from '../components/PageHeader'
+import SyncStatus from '../components/SyncStatus'
 import {
   ChevronRightIcon,
   ClockIcon,
@@ -12,6 +13,7 @@ import { ALL_SPECIES } from '../lib/fish/encyclopedia'
 import { type AuthApi } from '../hooks/useAuth'
 import { authErrorMessage } from '../lib/authError'
 import { maskPhone } from '../lib/phone'
+import type { SyncApi } from '../hooks/useCloudSync'
 import type { TripApi } from '../hooks/useTrip'
 import './MinePage.css'
 
@@ -25,6 +27,7 @@ import './MinePage.css'
 interface MinePageProps {
   trip: TripApi
   auth: AuthApi
+  sync: SyncApi
   onOpenCatches: () => void
   onOpenTrips: () => void
   onOpenSpeciesList: () => void
@@ -33,6 +36,7 @@ interface MinePageProps {
 export default function MinePage({
   trip,
   auth,
+  sync,
   onOpenCatches,
   onOpenTrips,
   onOpenSpeciesList,
@@ -107,6 +111,8 @@ export default function MinePage({
         </p>
       )}
 
+      <SyncStatus sync={sync} signedIn={signedIn} />
+
       <nav className="mine-list" aria-label="我的记录">
         <button type="button" className="mine-entry" onClick={onOpenCatches}>
           <span className="mine-entry__icon mine-entry__icon--warm" aria-hidden="true">
@@ -149,13 +155,18 @@ export default function MinePage({
       <section className="mine-note">
         <h2 className="mine-note__title">关于数据</h2>
         <p>
-          出勤、渔获、钓点、装备和照片都保存在这台设备上（浏览器本地存储与 IndexedDB），
-          不会上传到任何服务器。
+          装备、钓点、出勤、渔获、照片和首页偏好都可以同步到账号。登录同一账号后，
+          在另一台设备上也能恢复这些记录。
         </p>
         <p>
-          登录只用于识别账号，目前不会同步这些记录；清理浏览器数据仍会一并清掉它们。
+          所有记录同时保存在本机，断网时照常使用；联网后自动补传。
+          同步失败会明确提示，不会把没上传成功说成已同步。
         </p>
-        <p>重要的渔获建议另外留存照片。</p>
+        <p>
+          官方装备图鉴是所有用户共享的公开资料，只有管理员能维护；
+          你添加到「我的装备」的内容属于个人数据，不会写回官方图鉴。
+        </p>
+        <p>清理浏览器数据会清掉本机副本；已经同步到账号的记录可以在重新登录后恢复。</p>
       </section>
 
       {loginOpen && (

@@ -5,6 +5,7 @@ import {
   putImage,
   validateImageFile,
 } from '../lib/imageStore'
+import { subscribeRemoteApplied } from '../lib/sync/events'
 
 export interface GearImage {
   /** 已经 createObjectURL 的地址，随组件卸载自动释放 */
@@ -16,6 +17,9 @@ export interface GearImage {
 /**
  * 一次读取全部用户图片，按 gearId 建索引。
  * 列表里每件装备都要显示缩略图，逐个查询会产生 N 次事务，这里只查一次。
+ *
+ * 云端拉取下来的照片也写在同一份 IndexedDB 里，合并完成后会重新读取，
+ * 不需要刷新页面。
  */
 export function useImageLibrary() {
   const [images, setImages] = useState<Record<string, GearImage>>({})
@@ -24,43 +28,61 @@ export function useImageLibrary() {
   // 当前存活的 object URL，state 与 ref 同步维护，便于精确释放
   const imagesRef = useRef<Record<string, GearImage>>({})
   const urlsRef = useRef<Set<string>>(new Set())
+  const generationRef = useRef(0)
+
+  const reload = useCallback(async () => {
+    const generation = ++generationRef.current
+    try {
+      const records = await getAllImages('original')
+      if (generation !== generationRef.current) return
+
+      // 释放上一批地址，避免反复同步时内存越占越多
+      for (const url of urlsRef.current) URL.revokeObjectURL(url)
+      urlsRef.current.clear()
+
+      const next: Record<string, GearImage> = {}
+      for (const record of records) {
+        const url = URL.createObjectURL(record.blob)
+        urlsRef.current.add(url)
+        next[record.gearId] = {
+          url,
+          size: record.size,
+          updatedAt: record.updatedAt,
+        }
+      }
+
+      imagesRef.current = next
+      setImages(next)
+      setLoadError(null)
+    } catch {
+      // 图片库不可用不影响文字数据，只是没有缩略图
+      if (generation === generationRef.current) {
+        setLoadError('图片库读取失败，暂时无法显示照片')
+      }
+    }
+  }, [])
 
   useEffect(() => {
-    // 捕获 Set 对象本身（Set 从不被替换，只做原地增删），
-    // 这样卸载时能释放到期间由 saveImage/removeImage 新增的地址
+    // 初始加载本身是异步的，setState 发生在 IndexedDB 读取完成之后，不是同步级联渲染
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void reload()
     const urls = urlsRef.current
-    let cancelled = false
-
-    getAllImages('original')
-      .then((records) => {
-        if (cancelled) return
-
-        const next: Record<string, GearImage> = {}
-        for (const record of records) {
-          const url = URL.createObjectURL(record.blob)
-          urlsRef.current.add(url)
-          next[record.gearId] = {
-            url,
-            size: record.size,
-            updatedAt: record.updatedAt,
-          }
-        }
-
-        imagesRef.current = next
-        setImages(next)
-      })
-      .catch(() => {
-        // 图片库不可用不影响文字数据，只是没有缩略图
-        if (!cancelled) setLoadError('图片库读取失败，暂时无法显示照片')
-      })
-
     return () => {
-      cancelled = true
+      generationRef.current += 1
       for (const url of urls) URL.revokeObjectURL(url)
       urls.clear()
       imagesRef.current = {}
     }
-  }, [])
+  }, [reload])
+
+  // 云端照片下载完成 / 被删除后，重新读取
+  useEffect(
+    () =>
+      subscribeRemoteApplied((kind) => {
+        if (kind === 'image') void reload()
+      }),
+    [reload],
+  )
 
   const releaseUrl = useCallback((gearId: string) => {
     const current = imagesRef.current[gearId]

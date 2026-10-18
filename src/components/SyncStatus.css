@@ -1,0 +1,115 @@
+.sync-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 14px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.sync-status--ok {
+  border-color: color-mix(in srgb, #12909f 28%, var(--border));
+  background: color-mix(in srgb, #12909f 7%, var(--surface));
+}
+
+.sync-status--warn {
+  border-color: color-mix(in srgb, #d97706 30%, var(--border));
+  background: color-mix(in srgb, #d97706 7%, var(--surface));
+}
+
+.sync-status--error {
+  border-color: color-mix(in srgb, var(--lure) 34%, var(--border));
+  background: color-mix(in srgb, var(--lure) 7%, var(--surface));
+}
+
+.sync-status--claim {
+  flex-wrap: wrap;
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.sync-status__dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.sync-status__dot--ok {
+  background: #12909f;
+}
+
+.sync-status__dot--warn {
+  background: #d97706;
+}
+
+.sync-status__dot--error {
+  background: var(--lure);
+}
+
+.sync-status__dot--busy {
+  background: var(--accent);
+  animation: sync-status-pulse 1s ease-in-out infinite;
+}
+
+@keyframes sync-status-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.sync-status__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.sync-status__text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.sync-status__action {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sync-status__action:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.sync-status__action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sync-status__error {
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lure);
+}

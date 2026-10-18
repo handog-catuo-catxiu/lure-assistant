@@ -1,3 +1,5 @@
+import { activeScope, databaseNameForScope } from './sync/scope'
+
 /**
  * LureMate 的 IndexedDB 统一入口。
  *
@@ -14,6 +16,7 @@ export const DB_NAME = 'luremate'
 
 /** v3：在 v2（images + catchPhotos）基础上增加 trackPoints */
 export const DB_VERSION = 3
+
 
 export const IMAGE_STORE = 'images'
 export const CATCH_PHOTO_STORE = 'catchPhotos'
@@ -43,13 +46,19 @@ export function isIdbError(error: unknown): error is IdbError {
   return error instanceof IdbError
 }
 
-let dbPromise: Promise<IDBDatabase> | null = null
+const dbPromises = new Map<string, Promise<IDBDatabase>>()
 
-/** 打开数据库；失败后允许下次重试，而不是一直返回失败的 Promise */
-export function openDatabase(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise
+/**
+ * 打开数据库；失败后允许下次重试，而不是一直返回失败的 Promise。
+ *
+ * 不传名字时使用当前数据范围对应的数据库。认领本机旧数据时，
+ * 需要同时打开旧库（luremate）和账号库，所以允许显式传名字。
+ */
+export function openDatabase(dbName = databaseNameForScope(activeScope())): Promise<IDBDatabase> {
+  const existing = dbPromises.get(dbName)
+  if (existing) return existing
 
-  dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
+  const promise = new Promise<IDBDatabase>((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
       reject(new IdbError('unavailable', '当前浏览器不支持本地数据存储'))
       return
@@ -57,7 +66,7 @@ export function openDatabase(): Promise<IDBDatabase> {
 
     let request: IDBOpenDBRequest
     try {
-      request = indexedDB.open(DB_NAME, DB_VERSION)
+      request = indexedDB.open(dbName, DB_VERSION)
     } catch {
       reject(new IdbError('unavailable', '无法打开本地数据库'))
       return
@@ -85,11 +94,12 @@ export function openDatabase(): Promise<IDBDatabase> {
       reject(new IdbError('blocked', '本地数据库被其他标签页占用，请关掉其它页面后重试'))
   })
 
-  dbPromise.catch(() => {
-    dbPromise = null
+  dbPromises.set(dbName, promise)
+  promise.catch(() => {
+    dbPromises.delete(dbName)
   })
 
-  return dbPromise
+  return promise
 }
 
 export function storageError(message = '本地数据写入失败，可能是存储空间不足'): IdbError {
@@ -101,8 +111,9 @@ export async function idbRequest<T>(
   storeName: string,
   mode: IDBTransactionMode,
   run: (store: IDBObjectStore) => IDBRequest<T>,
+  dbName?: string,
 ): Promise<T> {
-  const db = await openDatabase()
+  const db = await openDatabase(dbName)
 
   return new Promise<T>((resolve, reject) => {
     let transaction: IDBTransaction
@@ -126,8 +137,9 @@ export async function idbTransactionDone(
   storeName: string,
   mode: IDBTransactionMode,
   run: (store: IDBObjectStore) => void,
+  dbName?: string,
 ): Promise<void> {
-  const db = await openDatabase()
+  const db = await openDatabase(dbName)
 
   return new Promise<void>((resolve, reject) => {
     let transaction: IDBTransaction
