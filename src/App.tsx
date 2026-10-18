@@ -12,6 +12,7 @@ import SpeciesPage from './pages/SpeciesPage'
 import StartTripPage from './pages/StartTripPage'
 import TripDetailPage from './pages/TripDetailPage'
 import TripPage from './pages/TripPage'
+import { useAuth } from './hooks/useAuth'
 import { useCatchPhotos } from './hooks/useCatchPhotos'
 import { useDockVisibility } from './hooks/useDockVisibility'
 import { useGear } from './hooks/useGear'
@@ -53,6 +54,8 @@ function App() {
   const images = useImageLibrary()
   const trip = useTrip()
   const catchPhotos = useCatchPhotos()
+  // 账号状态放在最外层：后续云同步也从这里取 uid，页面之间不会各建一份
+  const auth = useAuth()
 
   /*
    * 轨迹记录器放在最外层：整个应用里只有这一条高德定位循环，
@@ -127,6 +130,7 @@ function App() {
       return (
         <MinePage
           trip={trip}
+          auth={auth}
           onOpenCatches={() => setRoute({ name: 'catches' })}
           onOpenTrips={() => changeTab('trip')}
           onOpenSpeciesList={() => setRoute({ name: 'species-list' })}

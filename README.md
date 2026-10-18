@@ -69,6 +69,58 @@ AMAP_SECURITY_CODE=你的安全密钥
 没有第 2 步里的代理时：线上只能显示底图、轨迹和标记，地名识别与地点搜索会明确提示缺代理，
 可以让用户手写地名。
 
+## CloudBase 账号登录（手机号验证码）
+
+「我的」页支持中国大陆手机号（+86）验证码登录，未注册的手机号验证通过后会自动创建账号。
+当前只做身份登录，**不同步任何本地记录**；出勤、装备、钓点、渔获和照片仍然只存在本机。
+登录后「我的」页只显示脱敏号码（例如 `138****8000`），退出登录后本地数据不受影响。
+
+代码使用 CloudBase Auth v3（PostgreSQL 环境推荐接口）：
+
+- 发送验证码 / 自动注册：`auth.signInWithOtp({ phone })`，保存返回的 `data.verifyOtp`
+- 校验验证码并登录：`data.verifyOtp({ token })`
+- 恢复会话：`auth.getSession()`，`data.session` 为空表示未登录
+- 退出：`auth.signOut()`
+
+不使用 v2 的 `getVerification` / `signInWithEmail` / `getLoginState` / `getCurrentUser`。
+账号身份以 `session.user.id`（CloudBase UID）为准，手机号只用于展示；
+以后做装备云同步时，数据归属也使用 UID，不使用手机号。
+前端只带公开的环境 ID（以及可选的 Publishable Key），不需要也不允许配置 SecretId / SecretKey。
+
+### 控制台配置（需要手动确认一次）
+
+1. 云开发控制台 → 身份认证 → 登录方式：确认「短信验证码」已开启。
+   使用默认短信通道即可，不需要另外配置短信签名、模板或自定义服务商；
+   只有要自定义签名/模板时，才需要在该页面继续配置。
+2. 确认账号有可用的短信额度/资源包。额度不足时，登录界面会提示「短信发送额度不足」。
+3. 环境设置 → 安全配置 → **Web 安全域名**，逐个添加：
+   - `handog-catuo-catxiu.github.io`（线上 GitHub Pages）
+   - `localhost:5173`（本地 Vite）
+   - `127.0.0.1:5173`
+   - 如果本地换了端口（例如 `5201`），那个端口也要单独加。
+
+   安全域名**不要带 `https://`、不要带路径**，也不支持通配符；
+   没加时登录请求会被拒绝（常见错误码 `INVALID_REQUEST_SOURCE`）。
+
+### 环境变量
+
+前端内置了默认环境 ID `luremate-d5gilu0y4efa3b802`，本地通常不用配。
+需要指向别的环境时，在 `.env.local` 或仓库 Actions Variables 里设置：
+
+```
+VITE_CLOUDBASE_ENV_ID=你的环境ID
+```
+
+手机号验证码登录不需要 Publishable Key。以后接入 PostgreSQL 装备同步时，
+再在控制台创建 Publishable Key 并配置（它是前端公开凭据，不是 SecretKey）：
+
+```
+VITE_PUBLISHABLE_KEY=你的PublishableKey
+```
+
+环境 ID 和 Publishable Key 都会出现在前端代码里，属于公开信息；
+SecretId / SecretKey 绝不能放进前端。
+
 ## 定位说明（改代码前请先看这段）
 
 全项目只有**一套定位**：`AMap.Geolocation`，包在 `src/lib/amap/geolocation.ts` 里。

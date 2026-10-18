@@ -1,0 +1,147 @@
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.login-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.login-input {
+  width: 100%;
+  min-width: 0;
+  /* 16px 避免 iOS 聚焦时自动放大页面 */
+  font-size: 16px;
+  line-height: 1.4;
+  font-family: inherit;
+  color: var(--text-strong);
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.login-input::placeholder {
+  color: var(--text-muted);
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.login-input:disabled {
+  opacity: 0.7;
+}
+
+.login-code-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.login-code-row .login-input {
+  flex: 1;
+}
+
+.login-phone-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.login-phone-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.login-phone-prefix {
+  flex: 0 0 auto;
+  padding: 0 9px 0 13px;
+  border-right: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.login-phone-input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.login-phone-input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.login-send {
+  flex: 0 0 auto;
+  min-width: 92px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.login-send:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+.login-send:disabled {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.login-hint {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.login-error {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--lure);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.btn:disabled:active {
+  transform: none;
+}

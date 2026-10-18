@@ -1,6 +1,17 @@
+import { useState } from 'react'
+import LoginModal from '../components/LoginModal'
 import PageHeader from '../components/PageHeader'
-import { ChevronRightIcon, ClockIcon, FishIcon, LayersIcon } from '../components/icons'
+import {
+  ChevronRightIcon,
+  ClockIcon,
+  FishIcon,
+  LayersIcon,
+  UserIcon,
+} from '../components/icons'
 import { ALL_SPECIES } from '../lib/fish/encyclopedia'
+import { type AuthApi } from '../hooks/useAuth'
+import { authErrorMessage } from '../lib/authError'
+import { maskPhone } from '../lib/phone'
 import type { TripApi } from '../hooks/useTrip'
 import './MinePage.css'
 
@@ -13,6 +24,7 @@ import './MinePage.css'
 
 interface MinePageProps {
   trip: TripApi
+  auth: AuthApi
   onOpenCatches: () => void
   onOpenTrips: () => void
   onOpenSpeciesList: () => void
@@ -20,16 +32,80 @@ interface MinePageProps {
 
 export default function MinePage({
   trip,
+  auth,
   onOpenCatches,
   onOpenTrips,
   onOpenSpeciesList,
 }: MinePageProps) {
   const catchCount = trip.catches.length
   const tripCount = trip.sessions.length
+  const [loginOpen, setLoginOpen] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState<string | null>(null)
+
+  const signedIn = auth.status === 'signedIn'
+
+  async function handleSignOut() {
+    setSigningOut(true)
+    setSignOutError(null)
+    try {
+      await auth.signOut()
+    } catch (error) {
+      setSignOutError(authErrorMessage(error))
+    } finally {
+      setSigningOut(false)
+    }
+  }
 
   return (
     <div className="mine">
-      <PageHeader title="我的" subtitle="记录都存在本机，不上传服务器" />
+      <PageHeader title="我的" subtitle="账号登录与本机记录" />
+
+      <section className="mine-account" aria-label="账号">
+        <span className="mine-account__icon" aria-hidden="true">
+          <UserIcon size={22} />
+        </span>
+        <span className="mine-account__text">
+          <span className="mine-account__title">
+            {auth.status === 'loading'
+              ? '正在检查登录状态…'
+              : signedIn
+                ? maskPhone(auth.user?.phone ?? '')
+                : '登录 / 注册'}
+          </span>
+          <span className="mine-account__sub">
+            {auth.status === 'loading'
+              ? '本机记录不受影响'
+              : signedIn
+                ? '已登录 · 刷新页面后仍保持登录'
+                : '手机号验证码登录，未注册会自动创建账号'}
+          </span>
+        </span>
+        {signedIn ? (
+          <button
+            type="button"
+            className="mine-account__action"
+            onClick={() => void handleSignOut()}
+            disabled={signingOut}
+          >
+            {signingOut ? '退出中…' : '退出登录'}
+          </button>
+        ) : auth.status === 'signedOut' ? (
+          <button
+            type="button"
+            className="mine-account__action mine-account__action--primary"
+            onClick={() => setLoginOpen(true)}
+          >
+            登录
+          </button>
+        ) : null}
+      </section>
+
+      {(auth.notice || signOutError) && (
+        <p className="mine-account__error" role="alert">
+          {signOutError ?? auth.notice}
+        </p>
+      )}
 
       <nav className="mine-list" aria-label="我的记录">
         <button type="button" className="mine-entry" onClick={onOpenCatches}>
@@ -76,8 +152,15 @@ export default function MinePage({
           出勤、渔获、钓点、装备和照片都保存在这台设备上（浏览器本地存储与 IndexedDB），
           不会上传到任何服务器。
         </p>
-        <p>清理浏览器数据会一并清掉这些记录，重要的渔获建议另外留存照片。</p>
+        <p>
+          登录只用于识别账号，目前不会同步这些记录；清理浏览器数据仍会一并清掉它们。
+        </p>
+        <p>重要的渔获建议另外留存照片。</p>
       </section>
+
+      {loginOpen && (
+        <LoginModal auth={auth} onClose={() => setLoginOpen(false)} />
+      )}
     </div>
   )
 }
